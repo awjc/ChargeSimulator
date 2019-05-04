@@ -41,6 +41,12 @@ public strictfp class ChargeSimulator extends JPanel {
 
   private static final long serialVersionUID = 1L;
 
+  /** The geometric factor for each step of the speed scale factor */
+  private static final double SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR = 1.1;
+
+  /** Relative multiplier for physics update speed */
+  private double physicsSpeedFactor = 1.0;
+
   public static void main(String[] args) {
     SwingUtilities.invokeLater(new Runnable() {
       @Override
@@ -68,9 +74,9 @@ public strictfp class ChargeSimulator extends JPanel {
 
   private JFrame frame;
 
-  private List<Charge> negCharges;
-  private List<Charge> posCharges;
-  private List<TestCharge> testCharges;
+  private final List<Charge> negCharges;
+  private final List<Charge> posCharges;
+  private final List<TestCharge> testCharges;
 
   private int prevButton = 0;
   private int prevX = 0;
@@ -93,6 +99,8 @@ public strictfp class ChargeSimulator extends JPanel {
   private boolean moving = true;
   private boolean drawing = true;
   private boolean drawPotential = false;
+
+  private Timer repeatTimer = new Timer();
 
   private List<Charge> mostRecent = new ArrayList<>();
   private Stack<List<Charge>> mostRecentStack = new Stack<>();
@@ -198,7 +206,6 @@ public strictfp class ChargeSimulator extends JPanel {
         mostRecentStack.push(mostRecent);
         mostRecent = new ArrayList<>();
 
-        prevButton = -1;
         repeating = false;
       }
     };
@@ -416,40 +423,27 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_A) {
-          if (prevButton != -1 && !repeating) {
-            final Timer t = new Timer();
-            t.schedule(new TimerTask() {
+          if (!repeating) {
+            repeatTimer.schedule(new TimerTask() {
               @Override
               public void run() {
-                if (prevButton == -1 || !repeating) {
-                  repeating = false;
-                  t.cancel();
-                  return;
-                }
-
-                if (prevButton == MouseEvent.BUTTON1) {
-                  synchronized (posCharges) {
-                    posCharges.add(new Charge(prevX, prevY, 100));
-                  }
-                } else if (prevButton == MouseEvent.BUTTON3) {
-                  synchronized (negCharges) {
-                    negCharges.add(new Charge(prevX, prevY, -100));
-                  }
-                } else {
-                  synchronized (testCharges) {
-                    TestCharge tc = new TestCharge(prevX, prevY, true);
-                    tc.first = testCharges.isEmpty();
-                    testCharges.add(tc);
-                  }
+                synchronized (testCharges) {
+                  TestCharge tc = new TestCharge(prevX, prevY, true);
+                  tc.first = testCharges.isEmpty();
+                  testCharges.add(tc);
                 }
               }
             }, 0, REPEAT_DELAY);
-            repeating = true;
+          } else {
+            repeatTimer.cancel();
+            repeatTimer = new Timer();
           }
+
+          repeating = !repeating;
         }
 
         if (e.getKeyCode() == KeyEvent.VK_S) {
-          repeating = false;
+
         }
 
         if (e.getKeyCode() == KeyEvent.VK_M) {
@@ -543,25 +537,37 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET) {
-          if (pdx > 1) {
-            pdx /= 2;
-          }
-          if (pdy > 1) {
-            pdy /= 2;
-          }
+          if (e.isShiftDown()) {
+            if (pdx > 1) {
+              pdx /= 2;
+            }
+            if (pdy > 1) {
+              pdy /= 2;
+            }
 
-          arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+            arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+          } else {
+            physicsSpeedFactor /= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
+          }
         }
 
         if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET) {
-          if (pdx < 128) {
-            pdx *= 2;
-          }
-          if (pdy < 128) {
-            pdy *= 2;
-          }
+          if (e.isShiftDown()) {
+            if (pdx < 128) {
+              pdx *= 2;
+            }
+            if (pdy < 128) {
+              pdy *= 2;
+            }
 
-          arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+            arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+          } else {
+            physicsSpeedFactor *= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
+          }
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_BACK_SLASH) {
+          physicsSpeedFactor = 1.0;
         }
       }
     });
@@ -694,10 +700,11 @@ public strictfp class ChargeSimulator extends JPanel {
     offG.setColor(Color.WHITE);
     FontMetrics fm = offG.getFontMetrics();
     offG.drawString(String.format("Zoom: %.2f%%", scaleFactor * 100), 10, 10 + fm.getAscent());
+    offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10, 10 + fm.getAscent() * 2);
 
     float mag = getPotentialAt(mouseX, mouseY);
     offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
-        20 + fm.getAscent() * 2);
+         10 + fm.getAscent() * 3);
 
     if (update) {
       xs = new int[]{getWidth() - 20, getWidth() - 20, getWidth() - 5};
@@ -925,7 +932,7 @@ public strictfp class ChargeSimulator extends JPanel {
             }
 
 //						for(int j=0; j < 10; j++)
-            testCharges.get(i).update(posCharges, negCharges, 1.0 / drawingFPS);
+            testCharges.get(i).update(posCharges, negCharges, physicsSpeedFactor / drawingFPS);
           }
         }
       });

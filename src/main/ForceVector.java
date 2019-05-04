@@ -1,5 +1,8 @@
 package main;
 
+/**
+ * There is no javadoc
+ */
 public strictfp class ForceVector {
 	private double xc;
 	private double yc;
