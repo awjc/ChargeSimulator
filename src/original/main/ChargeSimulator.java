@@ -1,7 +1,5 @@
 package original.main;
 
-import original.gui.CenteredJFrame;
-
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -39,7 +37,7 @@ import javax.swing.SwingUtilities;
 
 public strictfp class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.001";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.002";
 
 
 

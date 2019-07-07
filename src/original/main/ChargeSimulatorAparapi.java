@@ -1,7 +1,5 @@
 package original.main;
 
-import original.gui.CenteredJFrame;
-
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
