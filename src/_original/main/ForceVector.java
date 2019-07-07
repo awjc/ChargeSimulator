@@ -1,4 +1,4 @@
-package original.main;
+package _original.main;
 
 /**
  * There is no javadoc

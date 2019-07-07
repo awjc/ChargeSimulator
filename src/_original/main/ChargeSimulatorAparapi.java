@@ -1,4 +1,4 @@
-package original.main;
+package _original.main;
 
 import java.awt.Color;
 import java.awt.Container;
