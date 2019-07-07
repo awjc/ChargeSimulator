@@ -1,15 +1,16 @@
 package model;
 
-import ui.Viewport;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 
 public abstract class Animatable {
-  protected double x;
-  protected double y;
+  protected Point2D pos;
+  protected Point2D vel;
 
-  public Animatable(double x, double y) {
-    this.x = x;
-    this.y = y;
+  public Animatable(Point2D pos) {
+    this.pos = pos;
+    this.vel = new Double(0, 0);
   }
 
-  abstract void step(double timestep);
+  public abstract void update(long deltaTimeMs);
 }

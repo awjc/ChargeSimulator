@@ -47,7 +47,7 @@ public class Viewport {
 
   public Point2D convertWorldToScreen(double x, double y, Dimension frameSize) {
     double newX = (x - centerPoint.getX()) * pixelsPerUnitSpace + frameSize.width / 2.0;
-    double newY = (y - centerPoint.getY()) * pixelsPerUnitSpace + frameSize.height / 2.0;
+    double newY = -(y - centerPoint.getY()) * pixelsPerUnitSpace + frameSize.height / 2.0;
     return new Point2D.Double(newX, newY);
   }
 }
