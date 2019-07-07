@@ -1,4 +1,4 @@
-package main;
+package original.main;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -38,10 +38,32 @@ public strictfp class TestCharge {
 //		} else{
 //			g.setColor(TEST_CHARGE_COLOR);
 //		}
+		int gValue = 16 + (int) ((255 - 16) * mag());
+		int rValue = 1 + (int) ((40 - 1) * mag());
+		Color newColor = new Color(0, gValue, 0);
+		g.setColor(newColor);
 		g.fillOval(centerPoint.width + (int)((x - TEST_CHARGE_DIAMETER/2)*scaleFactor),
 				centerPoint.height +(int)((y - TEST_CHARGE_DIAMETER/2)*scaleFactor),
 				(int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor), (int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor));
 //		g.fillRect((int)(centerPoint.width + x*scaleFactor), (int)(centerPoint.height + y*scaleFactor), 5, 5);
+	}
+
+	private double f(double d) {
+		return Math.pow(d, 0.5);
+	}
+
+	private double g(double d) {
+		return Math.pow(d, 1.5);
+	}
+
+	private double mag() {
+		double mag = Math.sqrt(vx * vx + vy * vy);
+		// System.out.println(mag);
+		return clip(g(f(mag) / 50));
+	}
+
+	private double clip(double d) {
+		return Math.max(0, Math.min(1, d));
 	}
 
 	public void update(List<Charge> posCharges, List<Charge> negCharges, double deltaT){

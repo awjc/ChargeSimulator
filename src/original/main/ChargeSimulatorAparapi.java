@@ -1,6 +1,6 @@
-package main;
+package original.main;
 
-import gui.CenteredJFrame;
+import original.gui.CenteredJFrame;
 
 import java.awt.Color;
 import java.awt.Container;

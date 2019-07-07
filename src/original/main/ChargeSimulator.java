@@ -1,6 +1,6 @@
-package main;
+package original.main;
 
-import gui.CenteredJFrame;
+import original.gui.CenteredJFrame;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -38,6 +38,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 public strictfp class ChargeSimulator extends JPanel {
+
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.001";
+
+
 
   private static final long serialVersionUID = 1L;
 
@@ -121,7 +125,7 @@ public strictfp class ChargeSimulator extends JPanel {
     Dimension scrDim = Toolkit.getDefaultToolkit().getScreenSize();
     FRAME_WIDTH = (int) (scrDim.width * FRAME_WIDTH_SCREEN_PERCENTAGE);
     FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
-    frame = new CenteredJFrame("Charge Simulator", FRAME_WIDTH, FRAME_HEIGHT);
+    frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
     frame.setResizable(false);
     frame.getContentPane().add(this);
     // frame.setUndecorated(true);
@@ -867,7 +871,7 @@ public strictfp class ChargeSimulator extends JPanel {
   }
 
   private void doGreenBalls() {
-    final int NTASKS = 4;
+    final int NTASKS = 1;
 
     List<Future<?>> futures = new ArrayList<>();
     List<Runnable> work = new ArrayList<>();
