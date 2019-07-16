@@ -42,9 +42,9 @@ public strictfp class TestCharge {
 		int rValue = 1 + (int) ((40 - 1) * mag());
 		Color newColor = new Color(0, gValue, 0);
 		g.setColor(newColor);
-		g.fillOval(centerPoint.width + (int)((x - TEST_CHARGE_DIAMETER/2)*scaleFactor),
-				centerPoint.height +(int)((y - TEST_CHARGE_DIAMETER/2)*scaleFactor),
-				(int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor), (int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor));
+		g.fillOval(centerPoint.width + (int)((x - TEST_CHARGE_DIAMETER * ChargeSimulator.chargeSize/2)*scaleFactor),
+				centerPoint.height +(int)((y - TEST_CHARGE_DIAMETER * ChargeSimulator.chargeSize/2)*scaleFactor),
+				(int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor * ChargeSimulator.chargeSize), (int)Math.ceil(TEST_CHARGE_DIAMETER*scaleFactor * ChargeSimulator.chargeSize));
 //		g.fillRect((int)(centerPoint.width + x*scaleFactor), (int)(centerPoint.height + y*scaleFactor), 5, 5);
 	}
 
@@ -53,7 +53,7 @@ public strictfp class TestCharge {
 	}
 
 	private double g(double d) {
-		return Math.pow(d, 1.5);
+		return Math.pow(d, 3.5);
 	}
 
 	private double mag() {

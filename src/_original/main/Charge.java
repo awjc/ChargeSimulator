@@ -53,8 +53,8 @@ public strictfp class Charge {
 	
 	public void draw(Graphics g, double scaleFactor, Dimension centerPoint){
 //		g.setColor(q < 0 ? NEGATIVE_COLOR : POSITIVE_COLOR);
-		int diam = qToDiameter(q);
-		g.fillOval(centerPoint.width + (int)((x - diam/2)*scaleFactor), 
+		int diam = (int) (qToDiameter(q) * ChargeSimulator.chargeSize);
+		g.fillOval(centerPoint.width + (int)((x - diam/2)*scaleFactor),
 				centerPoint.height + (int)((y - diam/2)*scaleFactor), 
 				(int)Math.ceil(diam*scaleFactor), (int)Math.ceil(diam*scaleFactor));
 //		g.fillRect((int)(centerPoint.width + x*scaleFactor), (int)(centerPoint.height + y*scaleFactor), 5, 5);

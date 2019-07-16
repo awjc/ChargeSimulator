@@ -1,8 +1,9 @@
 package app;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
 import model.Animatable;
@@ -12,13 +13,19 @@ import ui.Viewport;
 public class Simulation {
   private static final int UPDATE_FPS = 60;
   private static final int MIN_UPDATE_DELAY_MS = 1000 / UPDATE_FPS;
+  private final Collection<PhysUpdateListener> physUpdateListeners;
 
   private SimulationModel model;
   private long startTimeMillis;
   private long lastUpdateTimeMillis;
 
-  public Simulation() {
+  private Simulation(Collection<PhysUpdateListener> physUpdateListeners) {
     this.model = SimulationModel.createEmpty();
+    this.physUpdateListeners = physUpdateListeners;
+  }
+
+  static Simulation create(PhysUpdateListener... physUpdateListener) {
+    return new Simulation(Arrays.asList(physUpdateListener));
   }
 
   public void initializeAndRun() {
@@ -29,6 +36,7 @@ public class Simulation {
     updateTimer.schedule(new TimerTask() {
       @Override
       public void run() {
+
         update();
       }
     }, 0, MIN_UPDATE_DELAY_MS);

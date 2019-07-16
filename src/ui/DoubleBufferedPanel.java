@@ -2,18 +2,20 @@ package ui;
 
 import static ui.UiUtils.setAntiAlias;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.function.Consumer;
 import javax.swing.JPanel;
+import ui.infopanel.InfoPanel;
 
 public class DoubleBufferedPanel extends JPanel {
   private Image offScrImg;
   private Graphics offG;
-  private Consumer<Graphics> drawFn;
+  private final Consumer<Graphics> drawFn;
+  private final InfoPanel infoPanel;
 
-  public DoubleBufferedPanel(Consumer<Graphics> drawFn) {
+  DoubleBufferedPanel(InfoPanel infoPanel, Consumer<Graphics> drawFn) {
+    this.infoPanel = infoPanel;
     this.drawFn = drawFn;
   }
 
@@ -29,7 +31,7 @@ public class DoubleBufferedPanel extends JPanel {
         return;
       }
 
-      offG = offScrImg.getGraphics();
+      offG = getGraphicsForImage(offScrImg);
     }
 
     if (offScrImg == null) {
@@ -37,44 +39,25 @@ public class DoubleBufferedPanel extends JPanel {
     }
 
     if (offG == null) {
-      offG = offScrImg.getGraphics();
+      offG = getGraphicsForImage(offScrImg);
     }
 
-    setAntiAlias(offG, true);
 
     offG.setColor(getBackground());
     offG.fillRect(0, 0, getWidth(), getHeight());
 
-    offG.setColor(Color.WHITE);
-    offG.drawString("TEXT", 100, 100);
-
-    // offG.setColor(Color.WHITE);
-    // FontMetrics fm = offG.getFontMetrics();
-    // offG.drawString(String.format("Zoom: %.2f%%", scaleFactor * 100), 10, 10 + fm.getAscent());
-    // offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10, 10 + fm.getAscent() * 2);
-    //
-    // float mag = getPotentialAt(mouseX, mouseY);
-    // offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
-    //     10 + fm.getAscent() * 3);
-    //
-    // if (update) {
-    //   xs = new int[]{getWidth() - 20, getWidth() - 20, getWidth() - 5};
-    //   ys = new int[]{7, 23, 15};
-    //   offG.fillPolygon(xs, ys, xs.length);
-    // } else {
-    //   offG.fillRect(getWidth() - 20, 7, 3, 15);
-    //   offG.fillRect(getWidth() - 14, 7, 3, 15);
-    // }
-    //
-    // if (drawPotential) {
-    //   drawPotential(offG);
-    // }
-
     drawFn.accept(offG);
+
+    infoPanel.draw(offG);
 
     if (g != null) {
       g.drawImage(offScrImg, getX(), getY(), null);
     }
   }
 
+  private static Graphics getGraphicsForImage(Image offScrImg) {
+    Graphics offG = offScrImg.getGraphics();
+    setAntiAlias(offG, true);
+    return offG;
+  }
 }

@@ -19,6 +19,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
@@ -37,16 +38,25 @@ import javax.swing.SwingUtilities;
 
 public strictfp class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.002";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.004";
+
+  public static double chargeSize = 1.0;
+
+  private final List<Double> chargeSizes = Arrays.asList(1.0, 0.333, 0.1, 0.3333, 1.001, 3.33, 10.0, 3.333);
 
 
+  private List<Runnable> updatesToRunNext = new ArrayList<>();
 
   private static final long serialVersionUID = 1L;
 
-  /** The geometric factor for each step of the speed scale factor */
+  /**
+   * The geometric factor for each step of the speed scale factor
+   */
   private static final double SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR = 1.1;
 
-  /** Relative multiplier for physics update speed */
+  /**
+   * Relative multiplier for physics update speed
+   */
   private double physicsSpeedFactor = 1.0;
 
   public static void main(String[] args) {
@@ -97,7 +107,7 @@ public strictfp class ChargeSimulator extends JPanel {
   private static final double MIN_SCALING_FACTOR = 0.001;
   private static final double MAX_SCALING_FACTOR = 100;
 
-  private boolean repeating = false;
+  private volatile boolean repeating = false;
   private boolean moving = true;
   private boolean drawing = true;
   private boolean drawPotential = false;
@@ -302,280 +312,348 @@ public strictfp class ChargeSimulator extends JPanel {
     frame.addKeyListener(new KeyAdapter() {
       @Override
       public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_X) {
-          synchronized (testCharges) {
-            testCharges.clear();
-          }
-
-          synchronized (negCharges) {
-            negCharges.clear();
-          }
-
-          synchronized (posCharges) {
-            posCharges.clear();
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_G) {
-          synchronized (testCharges) {
-            testCharges.clear();
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_D) {
-          drawing = !drawing;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-          System.exit(0);
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_B) {
-          synchronized (posCharges) {
-            posCharges.clear();
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_R) {
-          synchronized (negCharges) {
-            negCharges.clear();
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_HOME) {
-          scaleFactor = 1;
-          centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_1) {
-          Random r = new Random();
-          for (int i = 0; i < 50; i++) {
+        if (ignoreNext) {
+          ignoreNext = false;
+        } else {
+          if (e.getKeyCode() == KeyEvent.VK_X) {
             synchronized (testCharges) {
-              testCharges
-                  .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                      .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
+              testCharges.clear();
             }
-          }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_2) {
-          int nCols = 50;
-          int nRows = 30;
-          for (int i = 0; i < FRAME_WIDTH; i += FRAME_WIDTH / nCols) {
-            for (int j = 0; j < FRAME_HEIGHT; j += FRAME_HEIGHT / nRows) {
-              synchronized (posCharges) {
-                posCharges
-                    .add(new Charge((i - FRAME_WIDTH / 2) / scaleFactor, (j - FRAME_HEIGHT / 2)
-                        / scaleFactor, 400));
-              }
+            synchronized (negCharges) {
+              negCharges.clear();
             }
-          }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_3) {
-          Random r = new Random();
-          for (int i = 0; i < 1000; i++) {
-            synchronized (testCharges) {
-              testCharges
-                  .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                      .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
-            }
-          }
-
-          for (int i = 0; i < 1000; i++) {
             synchronized (posCharges) {
-              posCharges.add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                  .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, 200));
+              posCharges.clear();
             }
           }
 
-          for (int i = 0; i < 1000; i++) {
+          if (e.getKeyCode() == KeyEvent.VK_G) {
+            synchronized (testCharges) {
+              testCharges.clear();
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_D) {
+            drawing = !drawing;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_B) {
+            synchronized (posCharges) {
+              posCharges.clear();
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_R) {
             synchronized (negCharges) {
-              negCharges.add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                  .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, -200));
+              negCharges.clear();
             }
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_4) {
-          double radius = 100;
-          int nCharges = 100;
-          for (int i = 0; i < nCharges; i++) {
-            double theta = i * Math.PI * 2 / nCharges;
-            synchronized (negCharges) {
-              negCharges.add(new Charge((radius * Math.cos(theta)) / scaleFactor,
-                  (radius * Math.sin(theta)) / scaleFactor, -100));
-            }
+          if (e.getKeyCode() == KeyEvent.VK_HOME) {
+            scaleFactor = 1;
+            centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
+            radialCount = 100;
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_5) {
-          double dx = 50;
-          double dy = 50;
-          for (int i = 0; i < FRAME_WIDTH; i += dx) {
-            for (int j = 0; j < FRAME_HEIGHT; j += dy) {
-              testCharges.add(new TestCharge((i - FRAME_WIDTH / 2) / scaleFactor,
-                  (j - FRAME_HEIGHT / 2) / scaleFactor, true));
-            }
+          if (e.getKeyCode() == KeyEvent.VK_O) {
+            chargeSize = chargeSizes.get((chargeSizes.indexOf(chargeSize) + 1) % chargeSizes.size());
+            System.out.println(chargeSize);
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-          update = !update;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_A) {
-          if (!repeating) {
-            repeatTimer.schedule(new TimerTask() {
-              @Override
-              public void run() {
+          if (e.getKeyCode() == KeyEvent.VK_1) {
+            updatesToRunNext.add(() -> {
+              Random r = new Random();
+              for (int i = 0; i < 50; i++) {
                 synchronized (testCharges) {
-                  TestCharge tc = new TestCharge(prevX, prevY, true);
-                  tc.first = testCharges.isEmpty();
-                  testCharges.add(tc);
+                  testCharges
+                      .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
+                          (r
+                              .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
                 }
               }
-            }, 0, REPEAT_DELAY);
-          } else {
-            repeatTimer.cancel();
-            repeatTimer = new Timer();
+            });
           }
 
-          repeating = !repeating;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_S) {
-
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_M) {
-          if (!moving) {
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-            moving = true;
-          } else {
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            moving = false;
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_C) {
-//					consolidateCharges();
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_T) {
-          List<Charge> newPosCharges = new ArrayList<Charge>();
-          List<Charge> newNegCharges = new ArrayList<Charge>();
-          synchronized (negCharges) {
-            for (Charge c : negCharges) {
-              c.setCharge(-c.getCharge());
-              newPosCharges.add(c);
-            }
+          if (e.getKeyCode() == KeyEvent.VK_2) {
+            updatesToRunNext.add(() -> {
+              int nCols = 50;
+              int nRows = 30;
+              for (int i = 0; i < FRAME_WIDTH; i += FRAME_WIDTH / nCols) {
+                for (int j = 0; j < FRAME_HEIGHT; j += FRAME_HEIGHT / nRows) {
+                  synchronized (posCharges) {
+                    posCharges
+                        .add(new Charge((i - FRAME_WIDTH / 2) / scaleFactor, (j - FRAME_HEIGHT / 2)
+                            / scaleFactor, 400));
+                  }
+                }
+              }
+            });
           }
 
-          synchronized (posCharges) {
-            for (Charge c : posCharges) {
-              c.setCharge(-c.getCharge());
-              newNegCharges.add(c);
-            }
-          }
+          if (e.getKeyCode() == KeyEvent.VK_3) {
+            updatesToRunNext.add(() -> {
+              Random r = new Random();
+              for (int i = 0; i < 1000; i++) {
+                synchronized (testCharges) {
+                  testCharges
+                      .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
+                          (r
+                              .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
+                }
+              }
 
-          synchronized (posCharges) {
-            posCharges.clear();
-            posCharges.addAll(newPosCharges);
-          }
-
-          synchronized (negCharges) {
-            negCharges.clear();
-            negCharges.addAll(newNegCharges);
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_Z) {
-          if (!mostRecentStack.isEmpty()) {
-            List<Charge> c = mostRecentStack.pop();
-            mostRecentUndone.push(c);
-
-            synchronized (negCharges) {
-              negCharges.removeAll(c);
-            }
-            synchronized (posCharges) {
-              posCharges.removeAll(c);
-            }
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_Y) {
-          if (!mostRecentUndone.isEmpty()) {
-            List<Charge> c = mostRecentUndone.pop();
-            mostRecentStack.push(c);
-            for (Charge cc : c) {
-              if (cc.getCharge() > 0) {
+              for (int i = 0; i < 1000; i++) {
                 synchronized (posCharges) {
-                  posCharges.add(cc);
+                  posCharges
+                      .add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
+                          .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, 200));
+                }
+              }
+
+              for (int i = 0; i < 1000; i++) {
+                synchronized (negCharges) {
+                  negCharges
+                      .add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
+                          .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, -200));
+                }
+              }
+            });
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_4) {
+            updatesToRunNext.add(() -> {
+              double radius = 100;
+              int nCharges = radialCount;
+              List<Charge> charges = new ArrayList<>();
+              for (int i = 0; i < nCharges; i++) {
+                double theta = i * Math.PI * 2 / nCharges;
+                charges.add(new Charge((radius * Math.cos(theta)) / scaleFactor,
+                    (radius * Math.sin(theta)) / scaleFactor, e.isShiftDown() ? 100 : -100));
+              }
+              if (e.isShiftDown()) {
+                synchronized (posCharges) {
+                  posCharges.addAll(charges);
                 }
               } else {
                 synchronized (negCharges) {
-                  negCharges.add(cc);
+                  negCharges.addAll(charges);
+                }
+              }
+              mostRecentStack.push(charges);
+            });
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_5) {
+            updatesToRunNext.add(() -> {
+              double dx = 50;
+              double dy = 50;
+              for (int i = 0; i < FRAME_WIDTH; i += dx) {
+                for (int j = 0; j < FRAME_HEIGHT; j += dy) {
+                  testCharges.add(new TestCharge((i - FRAME_WIDTH / 2) / scaleFactor,
+                      (j - FRAME_HEIGHT / 2) / scaleFactor, true));
+                }
+              }
+            });
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_6) {
+            updatesToRunNext.add(() -> {
+              double radius = 100;
+              int nCharges = radialCount;
+              List<TestCharge> charges = new ArrayList<>();
+              for (int i = 0; i < nCharges; i++) {
+                double theta = i * Math.PI * 2 / nCharges;
+                charges.add(new TestCharge((radius * Math.cos(theta)) / scaleFactor,
+                    (radius * Math.sin(theta)) / scaleFactor, true));
+              }
+              synchronized (testCharges) {
+                testCharges.addAll(charges);
+              }
+            });
+            // mostRecentStack.push(charges);
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            update = !update;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_A) {
+            if (!repeating) {
+              repeatTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                  if (repeating) {
+                    synchronized (testCharges) {
+                      TestCharge tc = new TestCharge(prevX, prevY, true);
+                      tc.first = testCharges.isEmpty();
+                      testCharges.add(tc);
+                    }
+                  }
+                }
+              }, 0, REPEAT_DELAY);
+            } else {
+              repeatTimer.cancel();
+              repeatTimer = new Timer();
+            }
+
+            repeating = !repeating;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_S) {
+            ignoreNext = true;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_M) {
+            if (!moving) {
+              setCursor(new Cursor(Cursor.HAND_CURSOR));
+              moving = true;
+            } else {
+              setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+              moving = false;
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_C) {
+            //					consolidateCharges();
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_T) {
+            updatesToRunNext.add(() -> {
+              List<Charge> newPosCharges = new ArrayList<Charge>();
+              List<Charge> newNegCharges = new ArrayList<Charge>();
+
+              synchronized (negCharges) {
+                for (Charge c : negCharges) {
+                  c.setCharge(-c.getCharge());
+                  newPosCharges.add(c);
+                }
+              }
+              synchronized (posCharges) {
+                for (Charge c : posCharges) {
+                  c.setCharge(-c.getCharge());
+                  newNegCharges.add(c);
+                }
+              }
+              synchronized (posCharges) {
+                posCharges.clear();
+                posCharges.addAll(newPosCharges);
+              }
+              synchronized (negCharges) {
+                negCharges.clear();
+                negCharges.addAll(newNegCharges);
+              }
+            });
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_Z) {
+            if (!mostRecentStack.isEmpty()) {
+              List<Charge> c = mostRecentStack.pop();
+              mostRecentUndone.push(c);
+
+              synchronized (negCharges) {
+                negCharges.removeAll(c);
+              }
+              synchronized (posCharges) {
+                posCharges.removeAll(c);
+              }
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_Y) {
+            if (!mostRecentUndone.isEmpty()) {
+              List<Charge> c = mostRecentUndone.pop();
+              mostRecentStack.push(c);
+              for (Charge cc : c) {
+                if (cc.getCharge() > 0) {
+                  synchronized (posCharges) {
+                    posCharges.add(cc);
+                  }
+                } else {
+                  synchronized (negCharges) {
+                    negCharges.add(cc);
+                  }
                 }
               }
             }
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
-          if (drawingFreq > 1) {
-            drawingFreq -= 1;
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_MINUS) {
-          if (drawingFreq < 10) {
-            drawingFreq += 1;
-          }
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_P) {
-          drawPotential = !drawPotential;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET) {
-          if (e.isShiftDown()) {
-            if (pdx > 1) {
-              pdx /= 2;
+          if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
+            if (drawingFreq > 1) {
+              drawingFreq -= 1;
             }
-            if (pdy > 1) {
-              pdy /= 2;
-            }
-
-            arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
-          } else {
-            physicsSpeedFactor /= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET) {
-          if (e.isShiftDown()) {
-            if (pdx < 128) {
-              pdx *= 2;
+          if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+            if (drawingFreq < 10) {
+              drawingFreq += 1;
             }
-            if (pdy < 128) {
-              pdy *= 2;
-            }
-
-            arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
-          } else {
-            physicsSpeedFactor *= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
           }
-        }
 
-        if (e.getKeyCode() == KeyEvent.VK_BACK_SLASH) {
-          physicsSpeedFactor = 1.0;
+          if (e.getKeyCode() == KeyEvent.VK_P) {
+            drawPotential = !drawPotential;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET) {
+            if (e.isShiftDown()) {
+              if (pdx > 1) {
+                pdx /= 2;
+              }
+              if (pdy > 1) {
+                pdy /= 2;
+              }
+
+              arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+            } else {
+              physicsSpeedFactor /= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET) {
+            if (e.isShiftDown()) {
+              if (pdx < 128) {
+                pdx *= 2;
+              }
+              if (pdy < 128) {
+                pdy *= 2;
+              }
+
+              arr = new float[getWidth() / pdx + 1][getHeight() / pdy + 1];
+            } else {
+              physicsSpeedFactor *= SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR;
+            }
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_COMMA) {
+            radialCount = (int) (radialCount / SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR);
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_PERIOD) {
+            radialCount = (int) (radialCount * SPEED_SCALE_FACTOR_ADJUSTMENT_FACTOR);
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_SLASH) {
+            radialCount = 100;
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_BACK_SLASH) {
+            physicsSpeedFactor = 1.0;
+          }
         }
       }
     });
 
     setBackground(new Color(0, 10, 20));
   }
+
+  private int radialCount = 100;
+
+  private boolean ignoreNext = false;
 
 //	private void consolidateCharges(){
 //		List<Charge> newCharges = new ArrayList<>();
@@ -702,12 +780,13 @@ public strictfp class ChargeSimulator extends JPanel {
     offG.setColor(Color.WHITE);
     FontMetrics fm = offG.getFontMetrics();
     offG.drawString(String.format("Zoom: %.2f%%", scaleFactor * 100), 10, 10 + fm.getAscent());
-    offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10, 10 + fm.getAscent() * 2);
+    offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10,
+        10 + fm.getAscent() * 2);
+    offG.drawString(String.format("Radial Count: %d", radialCount), 10, 10 + fm.getAscent() * 3);
 
     float mag = getPotentialAt(mouseX, mouseY);
     offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
-         10 + fm.getAscent() * 3);
-
+        10 + fm.getAscent() * 4);
     if (update) {
       xs = new int[]{getWidth() - 20, getWidth() - 20, getWidth() - 5};
       ys = new int[]{7, 23, 15};
@@ -913,6 +992,9 @@ public strictfp class ChargeSimulator extends JPanel {
       return;
     }
 
+    updatesToRunNext.forEach(Runnable::run);
+    updatesToRunNext.clear();
+
     List<Runnable> work = new ArrayList<>();
     final int NTASKS = 4;
     int nCharges = testCharges.size() / NTASKS;
@@ -957,6 +1039,7 @@ public strictfp class ChargeSimulator extends JPanel {
 
     lastUpdateTime = System.currentTimeMillis();
   }
+
 
   public static void setAntiAlias(Graphics g, boolean isAntiAliased) {
     Graphics2D g2d = (Graphics2D) g;

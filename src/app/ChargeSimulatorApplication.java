@@ -1,5 +1,7 @@
 package app;
 
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 import ui.SimulatorWindow;
 
 /**
@@ -12,9 +14,9 @@ public class ChargeSimulatorApplication {
       "Charge Simulator - by awjc - version " + VERSION_STRING;
 
 
-  public static void main(String[] args) {
-    Simulation sim = new Simulation();
-    SimulatorWindow window = new SimulatorWindow(sim, WINDOW_TITLE).show();
-    window.draw();
+  public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+    SimulatorWindow window = new SimulatorWindow(WINDOW_TITLE);
+    Simulation sim = Simulation.create(window);
+    window.initializeAndShow(sim);
   }
 }
