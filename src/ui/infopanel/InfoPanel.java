@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
+import model.SimulationModel;
+import ui.SimulatorWindowState;
 
 public class InfoPanel extends JPanel {
   private List<InfoSubPanel> subPanels;
@@ -26,5 +28,21 @@ public class InfoPanel extends JPanel {
       g.setColor(subPanel.getDisplayStringColor());
       g.drawString(subPanel.getDisplayString(), horizontalOffsetPx, verticalOffsetPx);
     }
+  }
+
+  public void onBeforeDraw(SimulatorWindowState currentState) {
+    subPanels.forEach(p -> p.onBeforeDraw(currentState));
+  }
+
+  public void onAfterDraw(SimulatorWindowState currentState) {
+    subPanels.forEach(p -> p.onAfterDraw(currentState));
+  }
+
+  public void onBeforePhys(SimulationModel currentModel) {
+    subPanels.forEach(p -> p.onBeforePhys(currentModel));
+  }
+
+  public void onAfterPhys(SimulationModel currentModel) {
+    subPanels.forEach(p -> p.onAfterPhys(currentModel));
   }
 }

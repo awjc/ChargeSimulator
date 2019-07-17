@@ -25,6 +25,7 @@ public class SimulatorWindow implements PhysUpdateListener {
 
   private SimulatorWindowState state;
   private final JFrame frame;
+  private final InfoPanel infoPanel;
 
   public SimulatorWindow(String title) {
     this(title, DEFAULT_WINDOW_SIZE);
@@ -35,8 +36,9 @@ public class SimulatorWindow implements PhysUpdateListener {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setSize(size);
     frame.setLocationRelativeTo(null);
+    infoPanel = makeInfoPanel();
     DoubleBufferedPanel contentPanel = new DoubleBufferedPanel(
-        makeInfoPanel(),
+        infoPanel,
         (Graphics g) -> state.sim.draw(state.viewport, frame.getSize(), g));
     contentPanel.setBackground(BG_COLOR);
 
@@ -44,7 +46,7 @@ public class SimulatorWindow implements PhysUpdateListener {
   }
 
   private InfoPanel makeInfoPanel() {
-    return InfoPanel.create(new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter(), new DrawFpsCounter());
+    return InfoPanel.create(new DrawFpsCounter());
   }
 
   /**
@@ -59,8 +61,11 @@ public class SimulatorWindow implements PhysUpdateListener {
     drawTimer.schedule(new TimerTask() {
       @Override
       public void run() {
+        infoPanel.onBeforeDraw(state);
         ((DoubleBufferedPanel) frame.getContentPane())
             .paintComponent(frame.getContentPane().getGraphics());
+        infoPanel.onAfterDraw(state);
+
       }
     }, 50, MIN_DRAWING_DELAY_MS);
     return this;
