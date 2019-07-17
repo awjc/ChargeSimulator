@@ -9,7 +9,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JFrame;
 import model.SimulationModel;
-import ui.infopanel.DrawFpsCounter;
 import ui.infopanel.InfoPanel;
 
 /**
@@ -46,13 +45,13 @@ public class SimulatorWindow implements PhysUpdateListener {
   }
 
   private InfoPanel makeInfoPanel() {
-    return InfoPanel.create(new DrawFpsCounter());
+    return InfoPanel.createDefault();
   }
 
   /**
    * Show the window & start the simulation
    */
-  public SimulatorWindow initializeAndShow(Simulation sim) {
+  public void initializeAndShow(Simulation sim) {
     this.state = SimulatorWindowState.create(sim);
     state.sim.initializeAndRun();
     frame.setVisible(true);
@@ -61,27 +60,26 @@ public class SimulatorWindow implements PhysUpdateListener {
     drawTimer.schedule(new TimerTask() {
       @Override
       public void run() {
-        infoPanel.onBeforeDraw(state);
-        ((DoubleBufferedPanel) frame.getContentPane())
-            .paintComponent(frame.getContentPane().getGraphics());
-        infoPanel.onAfterDraw(state);
-
+        doDrawNow();
       }
     }, 50, MIN_DRAWING_DELAY_MS);
-    return this;
   }
 
-  public void draw() {
-    frame.repaint();
+  /** Immediately draws the component */
+  private void doDrawNow() {
+    infoPanel.onBeforeDraw(state);
+    ((DoubleBufferedPanel) frame.getContentPane())
+        .paintComponent(frame.getContentPane().getGraphics());
+    infoPanel.onAfterDraw(state);
   }
 
   @Override
   public void onBeforePhysUpdate(SimulationModel currentState) {
-
+    infoPanel.onBeforePhys(currentState);
   }
 
   @Override
   public void onAfterPhysUpdate(SimulationModel currentState) {
-
+    infoPanel.onAfterPhys(currentState);
   }
 }

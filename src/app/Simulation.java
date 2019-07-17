@@ -16,7 +16,6 @@ public class Simulation {
   private final Collection<PhysUpdateListener> physUpdateListeners;
 
   private SimulationModel model;
-  private long startTimeMillis;
   private long lastUpdateTimeMillis;
 
   private Simulation(Collection<PhysUpdateListener> physUpdateListeners) {
@@ -29,15 +28,15 @@ public class Simulation {
   }
 
   public void initializeAndRun() {
-    this.startTimeMillis = System.currentTimeMillis();
-    this.lastUpdateTimeMillis = startTimeMillis;
+    this.lastUpdateTimeMillis = System.currentTimeMillis();
 
     Timer updateTimer = new Timer();
     updateTimer.schedule(new TimerTask() {
       @Override
       public void run() {
-
-        update();
+        physUpdateListeners.forEach(l -> l.onBeforePhysUpdate(model));
+        doUpdate();
+        physUpdateListeners.forEach(l -> l.onAfterPhysUpdate(model));
       }
     }, 0, MIN_UPDATE_DELAY_MS);
   }
@@ -47,7 +46,7 @@ public class Simulation {
     model.getDrawables().forEach(d -> d.draw(viewport, frameSize, g));
   }
 
-  public void update() {
+  private void doUpdate() {
     final long currentTimeMillis = System.currentTimeMillis();
     long deltaTimeMs = currentTimeMillis - lastUpdateTimeMillis;
 

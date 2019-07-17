@@ -20,7 +20,7 @@ public strictfp class TestCharge {
 	
 	private static final int TEST_CHARGE_DIAMETER = 15;
 	private static final Color TEST_CHARGE_COLOR = new Color(0, 255, 0);
-	private static final Color FIRST_COLOR = new Color(100	, 255, 255);
+	private static final Color FIRST_COLOR = new Color(100, 255, 255);
 
 	public TestCharge(double x, double y, boolean positive){
 		this.x = x;

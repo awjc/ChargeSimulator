@@ -7,9 +7,13 @@ public abstract class Animatable {
   protected Point2D pos;
   protected Point2D vel;
 
-  public Animatable(Point2D pos) {
+  protected Animatable(Point2D pos) {
+    this(pos, new Double(0, 0));
+  }
+
+  protected Animatable(Point2D pos, Point2D vel) {
     this.pos = pos;
-    this.vel = new Double(0, 0);
+    this.vel = vel;
   }
 
   public abstract void update(long deltaTimeMs);

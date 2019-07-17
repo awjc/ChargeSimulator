@@ -19,7 +19,7 @@ public class FpsAverager {
     fpsLog.addLast(currentTimestampMs);
     long lastTimeWeShouldKeep = currentTimestampMs - numMsToKeepTrackOf;
     while (fpsLog.getFirst() < lastTimeWeShouldKeep) {
-      // Since the canonical second ids are strictly ascending in time, just removing the first
+      // Since the canonical ms ids are strictly ascending in time, just removing the first
       // key makes this a LRU-eviction cache
       fpsLog.removeFirst();
     }

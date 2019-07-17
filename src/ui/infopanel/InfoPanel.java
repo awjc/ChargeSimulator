@@ -18,6 +18,10 @@ public class InfoPanel extends JPanel {
     return new InfoPanel(Arrays.asList(subPanels));
   }
 
+  public static InfoPanel createDefault() {
+    return create(new DrawFpsCounter(), new PhysFpsCounter());
+  }
+
   public void draw(Graphics g) {
     final int baseVerticalOffsetPx = 15;
     final int lineHeightPx = g.getFontMetrics().getAscent() + 5;
