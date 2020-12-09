@@ -38,7 +38,8 @@ public strictfp class TestCharge {
 //		} else{
 //			g.setColor(TEST_CHARGE_COLOR);
 //		}
-		int gValue = 16 + (int) ((255 - 16) * mag());
+		int min = 64;
+		int gValue = min + (int) ((255 - min) * mag());
 		int rValue = 1 + (int) ((40 - 1) * mag());
 		Color newColor = new Color(0, gValue, 0);
 		g.setColor(newColor);

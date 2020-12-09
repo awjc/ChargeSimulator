@@ -38,7 +38,7 @@ import javax.swing.SwingUtilities;
 
 public strictfp class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.004";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - version 0.005";
 
   public static double chargeSize = 1.0;
 
@@ -74,6 +74,11 @@ public strictfp class ChargeSimulator extends JPanel {
   private final int FRAME_HEIGHT;
   private static final double FRAME_WIDTH_SCREEN_PERCENTAGE = 0.85;
   private static final double FRAME_HEIGHT_SCREEN_PERCENTAGE = 0.9;
+  {
+    Dimension scrDim = Toolkit.getDefaultToolkit().getScreenSize();
+    FRAME_WIDTH = (int) (scrDim.width * FRAME_WIDTH_SCREEN_PERCENTAGE);
+    FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
+  }
 
   private static final double drawingFPS = 25;
   // private static final int updateFPS = 30;
@@ -130,9 +135,6 @@ public strictfp class ChargeSimulator extends JPanel {
   ;
 
   public ChargeSimulator() {
-    Dimension scrDim = Toolkit.getDefaultToolkit().getScreenSize();
-    FRAME_WIDTH = (int) (scrDim.width * FRAME_WIDTH_SCREEN_PERCENTAGE);
-    FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
     frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
     frame.setResizable(false);
     frame.getContentPane().add(this);
@@ -174,16 +176,17 @@ public strictfp class ChargeSimulator extends JPanel {
 
         Charge c = null;
 
+        double x = (e.getX() - centerPos.width) / scaleFactor;
+        double y = (e.getY() - centerPos.height) / scaleFactor;
+        System.out.println(">>> " + String.format("(%d, %d)", e.getX(), e.getY()));
+        System.out.println(String.format("Placing charge at (%.0f, %.0f)", x, y));
         if (e.getButton() == MouseEvent.BUTTON1) {
-          c = new Charge((e.getX() - centerPos.width) / scaleFactor, (e.getY() - centerPos.height)
-              / scaleFactor, 100);
+          c = new Charge(x, y, 100);
         } else if (e.getButton() == MouseEvent.BUTTON3) {
-          c = new Charge((e.getX() - centerPos.width) / scaleFactor, (e.getY() - centerPos.height)
-              / scaleFactor, -100);
+          c = new Charge(x, y, -100);
         } else {
           synchronized (testCharges) {
-            testCharges.add(new TestCharge((e.getX() - centerPos.width) / scaleFactor,
-                (e.getY() - centerPos.height) / scaleFactor, true));
+            testCharges.add(new TestCharge(x, y, true));
           }
         }
 
@@ -281,6 +284,7 @@ public strictfp class ChargeSimulator extends JPanel {
       @Override
       public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+          double oldScaleFactor = scaleFactor;
           int notches = e.getWheelRotation();
           int scrollAmount = e.getScrollAmount();
           // double prevScale = scaleFactor;
@@ -298,6 +302,24 @@ public strictfp class ChargeSimulator extends JPanel {
                 scaleFactor = newScaleFactor;
               }
             }
+          }
+
+          if (oldScaleFactor > scaleFactor) {
+            double change = scaleFactor / oldScaleFactor - 1;
+            // double change = 1 - scaleFactor / oldScaleFactor;
+            int xx = (FRAME_WIDTH / 2 - centerPos.width);
+            int yy = (FRAME_HEIGHT / 2 - centerPos.height);
+            // centerPos = new Dimension((int)(centerPos.width * change), (int)(centerPos.height * change));
+            centerPos = new Dimension((int) (centerPos.width - xx * change),
+                (int) (centerPos.height - yy * change));
+          } else {
+            double change = scaleFactor / oldScaleFactor - 1;
+            // double change = 1 - scaleFactor / oldScaleFactor;
+            int xx = (FRAME_WIDTH / 2 - centerPos.width);
+            int yy = (FRAME_HEIGHT / 2 - centerPos.height);
+            // centerPos = new Dimension((int)(centerPos.width * change), (int)(centerPos.height * change));
+            centerPos = new Dimension((int) (centerPos.width - xx * change),
+                (int) (centerPos.height - yy * change));
           }
           // double dScale = scaleFactor - prevScale;
           // int mx = (e.getX() - centerPos.width);
@@ -428,13 +450,20 @@ public strictfp class ChargeSimulator extends JPanel {
 
           if (e.getKeyCode() == KeyEvent.VK_4) {
             updatesToRunNext.add(() -> {
-              double radius = 100;
+              double radius = 100 / scaleFactor;
               int nCharges = radialCount;
               List<Charge> charges = new ArrayList<>();
+              // double xx = centerPos.getWidth();
+              // double yy = centerPos.getHeight();
+              int viewportCenterX = (int)((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+              int viewportCenterY = (int)((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
               for (int i = 0; i < nCharges; i++) {
                 double theta = i * Math.PI * 2 / nCharges;
-                charges.add(new Charge((radius * Math.cos(theta)) / scaleFactor,
-                    (radius * Math.sin(theta)) / scaleFactor, e.isShiftDown() ? 100 : -100));
+                charges.add(new Charge(
+                    viewportCenterX + radius * Math.cos(theta),
+                    viewportCenterY + radius * Math.sin(theta),
+                    e.isShiftDown() ? 100 : -100));
               }
               if (e.isShiftDown()) {
                 synchronized (posCharges) {
@@ -450,33 +479,48 @@ public strictfp class ChargeSimulator extends JPanel {
           }
 
           if (e.getKeyCode() == KeyEvent.VK_5) {
+            int viewportCenterX = (int)((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+            int viewportCenterY = (int)((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
             updatesToRunNext.add(() -> {
-              double dx = 50;
-              double dy = 50;
-              for (int i = 0; i < FRAME_WIDTH; i += dx) {
-                for (int j = 0; j < FRAME_HEIGHT; j += dy) {
-                  testCharges.add(new TestCharge((i - FRAME_WIDTH / 2) / scaleFactor,
-                      (j - FRAME_HEIGHT / 2) / scaleFactor, true));
+              double dx = e.isShiftDown() ? 25 : e.isControlDown() ? 15 : 50;
+              double dy = e.isShiftDown() ? 25 : e.isControlDown() ? 15 : 50;
+              for (int i = -FRAME_WIDTH/2; i < FRAME_WIDTH/2; i += dx) {
+                for (int j = -FRAME_HEIGHT/2; j < FRAME_HEIGHT/2; j += dy) {
+                  testCharges.add(new TestCharge(
+                      viewportCenterX + i / scaleFactor,
+                      viewportCenterY + j / scaleFactor,
+                      true));
                 }
               }
             });
           }
 
           if (e.getKeyCode() == KeyEvent.VK_6) {
+            int viewportCenterX = (int)((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+            int viewportCenterY = (int)((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
             updatesToRunNext.add(() -> {
-              double radius = 100;
+              double radius = 100 / scaleFactor;
               int nCharges = radialCount;
               List<TestCharge> charges = new ArrayList<>();
               for (int i = 0; i < nCharges; i++) {
                 double theta = i * Math.PI * 2 / nCharges;
-                charges.add(new TestCharge((radius * Math.cos(theta)) / scaleFactor,
-                    (radius * Math.sin(theta)) / scaleFactor, true));
+                charges.add(new TestCharge(
+                    viewportCenterX + radius * Math.cos(theta),
+                    viewportCenterY + radius * Math.sin(theta),
+                    true));
               }
               synchronized (testCharges) {
                 testCharges.addAll(charges);
               }
             });
             // mostRecentStack.push(charges);
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_7) {
+            System.out.println("Frame size: " + FRAME_WIDTH + " x " + FRAME_HEIGHT + " @ " + String.format("%.4f", scaleFactor));
+            System.out.println(String.format("center: (%d, %d)", centerPos.width, centerPos.height));
           }
 
           if (e.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -549,6 +593,26 @@ public strictfp class ChargeSimulator extends JPanel {
                 negCharges.addAll(newNegCharges);
               }
             });
+          }
+
+          if (e.getKeyCode() == KeyEvent.VK_U) {
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+              @Override
+              public void run() {
+                if (update) {
+                  synchronized (posCharges) {
+                    rotateRad(posCharges, Math.toRadians(1.0));
+                  }
+                }
+
+                if (update) {
+                  synchronized (negCharges) {
+                    rotateRad(negCharges, Math.toRadians(-1.0));
+                  }
+                }
+              }
+            }, 0, 1000 / 60);
           }
 
           if (e.getKeyCode() == KeyEvent.VK_Z) {
@@ -649,6 +713,15 @@ public strictfp class ChargeSimulator extends JPanel {
     });
 
     setBackground(new Color(0, 10, 20));
+  }
+
+  private void rotateRad(List<Charge> charges, double rad) {
+    for (int i = 0; i < charges.size(); i++) {
+      Charge c = charges.get(i);
+      double newX = c.getX() * Math.cos(rad) - c.getY() * Math.sin(rad);
+      double newY = c.getX() * Math.sin(rad) + c.getY() * Math.cos(rad);
+      c.changePosition(newX, newY);
+    }
   }
 
   private int radialCount = 100;
@@ -1040,8 +1113,7 @@ public strictfp class ChargeSimulator extends JPanel {
     lastUpdateTime = System.currentTimeMillis();
   }
 
-
-  public static void setAntiAlias(Graphics g, boolean isAntiAliased) {
+  private static void setAntiAlias(Graphics g, boolean isAntiAliased) {
     Graphics2D g2d = (Graphics2D) g;
     RenderingHints renderHints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
         isAntiAliased ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);

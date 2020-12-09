@@ -71,6 +71,11 @@ public strictfp class Charge {
 	public double distanceTo(Charge o){
 		return Math.floor(Math.sqrt((x - o.x)*(x - o.x)+ (y - o.y)*(y - o.y)));
 	}
+
+	public void changePosition(double newX, double newY) {
+		this.x = newX;
+		this.y = newY;
+	}
 	
 	@Override
 	public String toString(){
