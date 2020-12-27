@@ -1,18 +1,11 @@
-package v1;
+package v3;
 
-import static v1.ChargeSimulator.ClearParticles.ALL;
-import static v1.ChargeSimulator.ClearParticles.HALF;
-import static v1.ChargeSimulator.ClearParticles.NONE;
+import static v3.ChargeSimulator.ClearParticles.ALL;
+import static v3.ChargeSimulator.ClearParticles.HALF;
+import static v3.ChargeSimulator.ClearParticles.NONE;
 
-import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import v1.ChargeSimulator.ClearParticles;
+import v3.ChargeSimulator.ClearParticles;
 
 public class CommandUtils {
 
