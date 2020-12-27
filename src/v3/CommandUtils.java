@@ -37,5 +37,13 @@ public class CommandUtils {
     }
 
     handleClear(e);
+
+    if (e.getKeyCode() == KeyEvent.VK_S && e.isControlDown()) {
+      sim.saveState("latest.snapshot");
+    }
+
+    if (e.getKeyCode() == KeyEvent.VK_L && e.isControlDown()) {
+      sim.loadState("latest.snapshot");
+    }
   }
 }

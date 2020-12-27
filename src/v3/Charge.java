@@ -81,4 +81,17 @@ public strictfp class Charge {
 	public String toString(){
 		return String.format("Charge: [(%.0f, %.0f), %.0f C]", x, y, q);
 	}
+
+	String toSerializedString() {
+		return String.format("%s %s %s", Double.toString(x), Double.toString(y), Double.toString(q));
+	}
+
+	static Charge fromSerializedString(String encoded) {
+		String[] parts = encoded.split(" ");
+		assert parts.length == 3;
+		double x = Double.valueOf(parts[0]);
+		double y = Double.valueOf(parts[1]);
+		double q = Double.valueOf(parts[2]);
+		return new Charge(x, y, q);
+	}
 }

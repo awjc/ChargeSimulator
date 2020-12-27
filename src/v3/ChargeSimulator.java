@@ -1,5 +1,7 @@
 package v3;
 
+import static v3.ChargeSimulator.ClearParticles.ALL;
+
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -18,10 +20,15 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,6 +59,7 @@ public strictfp class ChargeSimulator extends JPanel {
     - maybe instead of state, store macros of key presses on which frame #, like a TAS
       - would be easy to record & share to demonstrate an idea or reproduce an interesting pattern
     - command to input (keycode, # of times, # of frames between times)
+    - Make better app icon
    */
 
 
@@ -102,7 +110,7 @@ public strictfp class ChargeSimulator extends JPanel {
   private static final double drawingFPS = 25;
   // private static final int updateFPS = 30;
 
-  private boolean update = true;
+  private volatile boolean update = true;
   private long lastUpdateTime = -1;
 
   private Image offScrImg;
@@ -180,7 +188,7 @@ public strictfp class ChargeSimulator extends JPanel {
       if (i % 2 == 0) {
         testCharges
             .add(new TestCharge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2, r.nextInt(FRAME_HEIGHT)
-                - FRAME_HEIGHT / 2, true));
+                - FRAME_HEIGHT / 2));
       }
     }
 
@@ -212,7 +220,7 @@ public strictfp class ChargeSimulator extends JPanel {
           c = new Charge(x, y, -100);
         } else {
           synchronized (testCharges) {
-            testCharges.add(new TestCharge(x, y, true));
+            testCharges.add(new TestCharge(x, y));
           }
         }
 
@@ -278,7 +286,7 @@ public strictfp class ChargeSimulator extends JPanel {
         } else {
           synchronized (testCharges) {
             testCharges.add(new TestCharge((e.getX() - centerPos.width) / scaleFactor,
-                (e.getY() - centerPos.height) / scaleFactor, true));
+                (e.getY() - centerPos.height) / scaleFactor));
           }
         }
 
@@ -396,8 +404,7 @@ public strictfp class ChargeSimulator extends JPanel {
               synchronized (testCharges) {
                 testCharges
                     .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
-                        (r
-                            .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
+                        (r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor));
               }
             }
           });
@@ -426,8 +433,7 @@ public strictfp class ChargeSimulator extends JPanel {
               synchronized (testCharges) {
                 testCharges
                     .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
-                        (r
-                            .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, true));
+                        (r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor));
               }
             }
 
@@ -490,8 +496,7 @@ public strictfp class ChargeSimulator extends JPanel {
               for (int j = -FRAME_HEIGHT / 2; j < FRAME_HEIGHT / 2; j += dy) {
                 testCharges.add(new TestCharge(
                     viewportCenterX + i / scaleFactor,
-                    viewportCenterY + j / scaleFactor,
-                    true));
+                    viewportCenterY + j / scaleFactor));
               }
             }
           });
@@ -509,8 +514,7 @@ public strictfp class ChargeSimulator extends JPanel {
               double theta = i * Math.PI * 2 / nCharges;
               charges.add(new TestCharge(
                   viewportCenterX + radius * Math.cos(theta),
-                  viewportCenterY + radius * Math.sin(theta),
-                  true));
+                  viewportCenterY + radius * Math.sin(theta)));
             }
             synchronized (testCharges) {
               testCharges.addAll(charges);
@@ -536,7 +540,7 @@ public strictfp class ChargeSimulator extends JPanel {
               public void run() {
                 if (repeating) {
                   synchronized (testCharges) {
-                    TestCharge tc = new TestCharge(prevX, prevY, true);
+                    TestCharge tc = new TestCharge(prevX, prevY);
                     tc.first = testCharges.isEmpty();
                     testCharges.add(tc);
                   }
@@ -1190,5 +1194,53 @@ public strictfp class ChargeSimulator extends JPanel {
       case NONE:
         break;
     }
+  }
+
+  void saveState(String filename) {
+    boolean prevUpdate = update;
+    update = false;
+    try {
+      PrintWriter out = new PrintWriter(new FileOutputStream(filename));
+      for (TestCharge testCharge : testCharges) {
+        out.println(testCharge.toSerializedString());
+      }
+      for (Charge negCharge : negCharges) {
+        out.println(negCharge.toSerializedString());
+      }
+      for (Charge posCharge : posCharges) {
+        out.println(posCharge.toSerializedString());
+      }
+      out.close();
+      System.out.println(String.format("Succesfully wrote save state to file %s", filename));
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    update = prevUpdate;
+  }
+
+  void loadState(String filename) {
+    boolean prevUpdate = update;
+    update = false;
+    try {
+      Scanner scanner = new Scanner(new FileInputStream(filename));
+      clearParticles(ALL, ALL, ALL);
+      while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        if (line.startsWith("T")) {
+          testCharges.add(TestCharge.fromSerializedString(line));
+        } else {
+          Charge charge = Charge.fromSerializedString(line);
+          if (charge.getCharge() < 0) {
+            negCharges.add(charge);
+          } else {
+            posCharges.add(charge);
+          }
+        }
+      }
+      System.out.println(String.format("Succesfully loaded save state from file %s", filename));
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    update = prevUpdate;
   }
 }
