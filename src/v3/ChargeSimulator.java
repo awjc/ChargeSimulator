@@ -113,7 +113,8 @@ public strictfp class ChargeSimulator extends JPanel {
   private static final double drawingFPS = 25;
   // private static final int updateFPS = 30;
 
-  private volatile boolean update = true;
+  private volatile boolean updating = true;
+  private volatile boolean drawing = true;
   private long lastUpdateTime = -1;
 
   private Image offScrImg;
@@ -144,7 +145,6 @@ public strictfp class ChargeSimulator extends JPanel {
 
   private volatile boolean repeating = false;
   private boolean moving = true;
-  private boolean drawing = true;
   private boolean drawPotential = false;
 
   private Timer repeatTimer = new Timer();
@@ -533,7 +533,7 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-          update = !update;
+          updating = !updating;
         }
 
         if (e.getKeyCode() == KeyEvent.VK_A) {
@@ -609,13 +609,13 @@ public strictfp class ChargeSimulator extends JPanel {
           t.schedule(new TimerTask() {
             @Override
             public void run() {
-              if (update) {
+              if (updating) {
                 synchronized (posCharges) {
                   rotateRad(posCharges, Math.toRadians(1.0));
                 }
               }
 
-              if (update) {
+              if (updating) {
                 synchronized (negCharges) {
                   rotateRad(negCharges, Math.toRadians(-1.0));
                 }
@@ -802,7 +802,7 @@ public strictfp class ChargeSimulator extends JPanel {
           }
         }
 
-        if (update) {
+        if (updating) {
           update();
         } else {
           lastUpdateTime = System.currentTimeMillis();
@@ -874,7 +874,7 @@ public strictfp class ChargeSimulator extends JPanel {
     float mag = getPotentialAt(mouseX, mouseY);
     offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
         10 + fm.getAscent() * 4);
-    if (update) {
+    if (updating) {
       xs = new int[]{getWidth() - 20, getWidth() - 20, getWidth() - 5};
       ys = new int[]{7, 23, 15};
       offG.fillPolygon(xs, ys, xs.length);
@@ -1200,8 +1200,10 @@ public strictfp class ChargeSimulator extends JPanel {
   }
 
   void saveState(String filename) {
-    boolean prevUpdate = update;
-    update = false;
+    boolean prevUpdate = updating;
+    boolean prevDrawing = drawing;
+    updating = false;
+    drawing = false;
     try {
       PrintWriter out = new PrintWriter(new FileOutputStream(filename));
       for (TestCharge testCharge : testCharges) {
@@ -1218,12 +1220,15 @@ public strictfp class ChargeSimulator extends JPanel {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-    update = prevUpdate;
+    updating = prevUpdate;
+    drawing = prevDrawing;
   }
 
   void loadState(String filename) {
-    boolean prevUpdate = update;
-    update = false;
+    boolean prevUpdate = updating;
+    boolean prevDrawing = drawing;
+    updating = false;
+    drawing = false;
     try {
       Scanner scanner = new Scanner(new FileInputStream(filename));
       clearParticles(ALL, ALL, ALL);
@@ -1244,6 +1249,7 @@ public strictfp class ChargeSimulator extends JPanel {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-    update = prevUpdate;
+    updating = prevUpdate;
+    drawing = prevDrawing;
   }
 }
