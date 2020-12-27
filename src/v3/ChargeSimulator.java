@@ -60,6 +60,9 @@ public strictfp class ChargeSimulator extends JPanel {
       - would be easy to record & share to demonstrate an idea or reproduce an interesting pattern
     - command to input (keycode, # of times, # of frames between times)
     - Make better app icon
+    - Add open snapshot file dialog
+    - MenuBar options for save/load & commands
+    - Rectangle select for deletion
    */
 
 
