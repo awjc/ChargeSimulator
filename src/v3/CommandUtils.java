@@ -31,10 +31,11 @@ public class CommandUtils {
     }
   }
 
+  public void addRing() {
+
+  }
+
   public void processKeyEvent(KeyEvent e) {
-    if (sim.maybeIgnoreFrame()) {
-      return;
-    }
 
     handleClear(e);
 
@@ -43,7 +44,7 @@ public class CommandUtils {
     }
 
     if (e.getKeyCode() == KeyEvent.VK_L && e.isControlDown()) {
-      sim.loadState("latest.snapshot");
+      sim.loadState(e.isShiftDown() ? "autosave.snapshot" : "latest.snapshot");
     }
   }
 }

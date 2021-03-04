@@ -43,9 +43,9 @@ public strictfp class TestCharge {
 //		} else{
 //			g.setColor(TEST_CHARGE_COLOR);
 //		}
-    int min = 16;
+    int min = 8;
     int gValue = min + (int) ((255 - min) * mag());
-    int rValue = 1 + (int) ((40 - 1) * mag());
+    // int rValue = 1 + (int) ((20 - 1) * mag());
     Color newColor = new Color(0, gValue, 0);
     g.setColor(newColor);
     g.fillOval(
@@ -59,11 +59,11 @@ public strictfp class TestCharge {
   }
 
   private double f(double d) {
-    return Math.pow(d, 0.5);
+    return Math.pow(d, 0.32);
   }
 
   private double g(double d) {
-    return Math.pow(d, 3.5);
+    return Math.pow(d, 5.5);
   }
 
   private double mag() {

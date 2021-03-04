@@ -24,9 +24,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -38,13 +45,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 public strictfp class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.1";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.2";
 
 
 
@@ -72,7 +81,7 @@ public strictfp class ChargeSimulator extends JPanel {
       .asList(1.0, 0.333, 0.1, 0.3333, 1.001, 3.33, 10.0, 3.333);
 
 
-  private List<Runnable> updatesToRunNext = new ArrayList<>();
+  private final List<List<Runnable>> updatesToRunNext = new LinkedList<>();
 
   private static final long serialVersionUID = 1L;
 
@@ -122,9 +131,9 @@ public strictfp class ChargeSimulator extends JPanel {
 
   private JFrame frame;
 
-  private final List<Charge> negCharges;
-  private final List<Charge> posCharges;
-  private final List<TestCharge> testCharges;
+  private final List<Charge> negCharges = new ArrayList<>();
+  private final List<Charge> posCharges = new ArrayList<>();
+  private final List<TestCharge> testCharges = new ArrayList<>();
 
   private int prevButton = 0;
   private int prevX = 0;
@@ -148,6 +157,8 @@ public strictfp class ChargeSimulator extends JPanel {
   private boolean drawPotential = false;
 
   private Timer repeatTimer = new Timer();
+  private Timer autosaveTimer = new Timer();
+  private static final int AUTOSAVE_PERIOD_MS = 60 * 1000;
 
   private List<Charge> mostRecent = new ArrayList<>();
   private Stack<List<Charge>> mostRecentStack = new Stack<>();
@@ -170,16 +181,26 @@ public strictfp class ChargeSimulator extends JPanel {
     this.commandUtils = commandUtils;
   }
 
+  private KeyMap keymap = new KeyMap();
+
   public ChargeSimulator() {
+    try {
+      keymap.initialize();
+    } catch (IllegalAccessException e) {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      JOptionPane
+          .showMessageDialog(null, "Error initializing keymap, aborting.\n\n" + sw.toString());
+      return;
+    }
+
+
     frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
     frame.setResizable(false);
     frame.getContentPane().add(this);
     // frame.setUndecorated(true);
     // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-    negCharges = new ArrayList<>();
-    posCharges = new ArrayList<>();
-    testCharges = new ArrayList<>();
 
     Random r = new Random();
     for (int i = 0; i < 100; i++) {
@@ -371,6 +392,10 @@ public strictfp class ChargeSimulator extends JPanel {
     frame.addKeyListener(new KeyAdapter() {
       @Override
       public void keyPressed(KeyEvent e) {
+        if (maybeIgnoreAction()) {
+          return;
+        }
+
         commandUtils.processKeyEvent(e);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,6 +406,10 @@ public strictfp class ChargeSimulator extends JPanel {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        linkToCommands();
+
+        tryRunKbMethod(makeKbString(e), 1);
+
         if (e.getKeyCode() == KeyEvent.VK_D) {
           drawing = !drawing;
         }
@@ -389,19 +418,18 @@ public strictfp class ChargeSimulator extends JPanel {
           System.exit(0);
         }
 
-        if (e.getKeyCode() == KeyEvent.VK_HOME) {
-          scaleFactor = 1;
-          centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
-          radialCount = 100;
-        }
-
         if (e.getKeyCode() == KeyEvent.VK_O) {
-          chargeSize = chargeSizes.get((chargeSizes.indexOf(chargeSize) + 1) % chargeSizes.size());
+          if (e.isShiftDown()) {
+            chargeSize = chargeSizes.stream().min(Double::compareTo).get();
+          } else {
+            chargeSize = chargeSizes
+                .get((chargeSizes.indexOf(chargeSize) + 1) % chargeSizes.size());
+          }
           System.out.println(chargeSize);
         }
 
         if (e.getKeyCode() == KeyEvent.VK_1) {
-          updatesToRunNext.add(() -> {
+          enqueueUpdate(() -> {
             Random r = new Random();
             for (int i = 0; i < 50; i++) {
               synchronized (testCharges) {
@@ -414,7 +442,7 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_2) {
-          updatesToRunNext.add(() -> {
+          enqueueUpdate(() -> {
             int nCols = 50;
             int nRows = 30;
             for (int i = 0; i < FRAME_WIDTH; i += FRAME_WIDTH / nCols) {
@@ -430,7 +458,7 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_3) {
-          updatesToRunNext.add(() -> {
+          enqueueUpdate(() -> {
             Random r = new Random();
             for (int i = 0; i < 1000; i++) {
               synchronized (testCharges) {
@@ -459,7 +487,7 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_4) {
-          updatesToRunNext.add(() -> {
+          enqueueUpdate(() -> {
             double radius = 100 / scaleFactor;
             int nCharges = radialCount;
             List<Charge> charges = new ArrayList<>();
@@ -486,44 +514,6 @@ public strictfp class ChargeSimulator extends JPanel {
             }
             mostRecentStack.push(charges);
           });
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_5) {
-          int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-          int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
-
-          updatesToRunNext.add(() -> {
-            double dx = e.isShiftDown() ? 25 : e.isControlDown() ? 15 : e.isAltDown() ? 100 : 50;
-            double dy = e.isShiftDown() ? 25 : e.isControlDown() ? 15 : e.isAltDown() ? 100 : 50;
-            for (int i = -FRAME_WIDTH / 2; i < FRAME_WIDTH / 2; i += dx) {
-              for (int j = -FRAME_HEIGHT / 2; j < FRAME_HEIGHT / 2; j += dy) {
-                testCharges.add(new TestCharge(
-                    viewportCenterX + i / scaleFactor,
-                    viewportCenterY + j / scaleFactor));
-              }
-            }
-          });
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_6) {
-          int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-          int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
-
-          updatesToRunNext.add(() -> {
-            double radius = 100 / scaleFactor;
-            int nCharges = radialCount;
-            List<TestCharge> charges = new ArrayList<>();
-            for (int i = 0; i < nCharges; i++) {
-              double theta = i * Math.PI * 2 / nCharges;
-              charges.add(new TestCharge(
-                  viewportCenterX + radius * Math.cos(theta),
-                  viewportCenterY + radius * Math.sin(theta)));
-            }
-            synchronized (testCharges) {
-              testCharges.addAll(charges);
-            }
-          });
-          // mostRecentStack.push(charges);
         }
 
         if (e.getKeyCode() == KeyEvent.VK_7) {
@@ -572,12 +562,9 @@ public strictfp class ChargeSimulator extends JPanel {
           }
         }
 
-        if (e.getKeyCode() == KeyEvent.VK_C) {
-          //					consolidateCharges();
-        }
 
         if (e.getKeyCode() == KeyEvent.VK_T) {
-          updatesToRunNext.add(() -> {
+          enqueueUpdate(() -> {
             List<Charge> newPosCharges = new ArrayList<Charge>();
             List<Charge> newNegCharges = new ArrayList<Charge>();
 
@@ -723,10 +710,38 @@ public strictfp class ChargeSimulator extends JPanel {
         if (e.getKeyCode() == KeyEvent.VK_BACK_SLASH) {
           physicsSpeedFactor = 1.0;
         }
+
+        if (e.getKeyCode() == KeyEvent.VK_0) {
+          enqueueUpdate(() -> {
+            int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+            int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
+            double radius = 100 / scaleFactor;
+            int nCharges = radialCount;
+            List<TestCharge> charges = new ArrayList<>();
+            for (int i = 0; i < nCharges; i++) {
+              double theta = i * Math.PI * 2 / nCharges;
+              charges.add(new TestCharge(
+                  viewportCenterX + radius * Math.cos(theta),
+                  viewportCenterY + radius * Math.sin(theta)));
+            }
+            synchronized (testCharges) {
+              testCharges.addAll(charges);
+            }
+          }, 10);
+        }
       }
     });
 
-    setBackground(new Color(0, 10, 20));
+    autosaveTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        saveState("autosave.snapshot");
+      }
+    }, AUTOSAVE_PERIOD_MS, AUTOSAVE_PERIOD_MS);
+
+    // setBackground(new Color(0, 10, 20));
+    setBackground(new Color(70, 80, 90));
   }
 
   private void rotateRad(List<Charge> charges, double rad) {
@@ -871,9 +886,9 @@ public strictfp class ChargeSimulator extends JPanel {
         10 + fm.getAscent() * 2);
     offG.drawString(String.format("Radial Count: %d", radialCount), 10, 10 + fm.getAscent() * 3);
 
-    float mag = getPotentialAt(mouseX, mouseY);
-    offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
-        10 + fm.getAscent() * 4);
+    // float mag = getPotentialAt(mouseX, mouseY);
+    // offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
+    //     10 + fm.getAscent() * 4);
     if (updating) {
       xs = new int[]{getWidth() - 20, getWidth() - 20, getWidth() - 5};
       ys = new int[]{7, 23, 15};
@@ -1073,14 +1088,35 @@ public strictfp class ChargeSimulator extends JPanel {
     }
   }
 
+
+  private void enqueueUpdate(Runnable updateToRun) {
+    enqueueUpdate(updateToRun, 1);
+  }
+
+  private void enqueueUpdate(Runnable updateToRun, int numTimes) {
+    synchronized (updatesToRunNext) {
+      for (int i = 0; i < numTimes; i++) {
+        if (i < updatesToRunNext.size()) {
+          updatesToRunNext.get(i).add(updateToRun);
+        } else {
+          updatesToRunNext.add(new ArrayList<>(Collections.singletonList(updateToRun)));
+        }
+      }
+    }
+  }
+
   private void update() {
     if (lastUpdateTime < 0) {
       lastUpdateTime = System.currentTimeMillis();
       return;
     }
 
-    updatesToRunNext.forEach(Runnable::run);
-    updatesToRunNext.clear();
+    synchronized (updatesToRunNext) {
+      if (updatesToRunNext.size() > 0) {
+        List<Runnable> currentUpdates = updatesToRunNext.remove(0);
+        currentUpdates.forEach(Runnable::run);
+      }
+    }
 
     List<Runnable> work = new ArrayList<>();
     final int NTASKS = 4;
@@ -1137,7 +1173,7 @@ public strictfp class ChargeSimulator extends JPanel {
   }
 
 
-  boolean maybeIgnoreFrame() {
+  boolean maybeIgnoreAction() {
     if (ignoreNext) {
       ignoreNext = false;
       return true;
@@ -1216,7 +1252,7 @@ public strictfp class ChargeSimulator extends JPanel {
         out.println(posCharge.toSerializedString());
       }
       out.close();
-      System.out.println(String.format("Succesfully wrote save state to file %s", filename));
+      System.out.println(String.format("Succesfully wrote save state to file \"%s\"", filename));
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
@@ -1245,11 +1281,138 @@ public strictfp class ChargeSimulator extends JPanel {
           }
         }
       }
-      System.out.println(String.format("Succesfully loaded save state from file %s", filename));
+      System.out.println(String.format("Succesfully loaded save state from file \"%s\"", filename));
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
     updating = prevUpdate;
     drawing = prevDrawing;
   }
+
+
+  private String makeKbString(KeyEvent e) {
+    String methodName = "kb_";
+    methodName += e.isMetaDown() ? "Meta_" : "";
+    methodName += e.isControlDown() ? "Ctrl_" : "";
+    methodName += e.isAltDown() ? "Alt_" : "";
+    methodName += e.isShiftDown() ? "Shift_" : "";
+    methodName += KeyEvent.getKeyText(e.getKeyCode());
+    return methodName;
+  }
+
+  private void tryRunKbMethod(String methodName, int numTimes) {
+    System.out.println("Running " + methodName + " x" + numTimes);
+    try {
+      Method method = ChargeSimulator.class.getDeclaredMethod(methodName, int.class);
+      method.invoke(ChargeSimulator.this, numTimes);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
+      // ex.printStackTrace();
+    }
+  }
+
+  private void linkToCommands() {
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  @SuppressWarnings("unused")
+  void kb_Home(int unused) {
+    verb_go_home();
+  }
+
+  @SuppressWarnings("unused")
+  void kb_5(int numTimes) {
+    enqueueUpdate(() -> verb_tc_grid(50, 50), numTimes);
+  }
+  @SuppressWarnings("unused")
+  void kb_Shift_5(int numTimes) {
+    enqueueUpdate(() -> verb_tc_grid(25, 25), numTimes);
+  }
+  @SuppressWarnings("unused")
+  void kb_Ctrl_5(int numTimes) {
+    enqueueUpdate(() -> verb_tc_grid(15, 15), numTimes);
+  }
+  @SuppressWarnings("unused")
+  void kb_Alt_5(int numTimes) {
+    enqueueUpdate(() -> verb_tc_grid(100, 100), numTimes);
+  }
+
+  @SuppressWarnings("unused")
+  void kb_6(int numTimes) {
+    enqueueUpdate(() -> verb_tc_circle(radialCount), numTimes);
+  }
+
+  @SuppressWarnings("unused")
+  void kb_C(int numTimes) {
+    verb_run_custom_command();
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  private void verb_tc_circle(int radialCount) {
+    int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+    int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
+    double radius = 100 / scaleFactor;
+    int nCharges = radialCount;
+    List<TestCharge> charges = new ArrayList<>();
+    for (int i = 0; i < nCharges; i++) {
+      double theta = i * Math.PI * 2 / nCharges;
+      charges.add(new TestCharge(
+          viewportCenterX + radius * Math.cos(theta),
+          viewportCenterY + radius * Math.sin(theta)));
+    }
+    synchronized (testCharges) {
+      testCharges.addAll(charges);
+    }
+  }
+
+  private void verb_tc_grid(int dx, int dy) {
+    int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
+    int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+
+    for (int i = -FRAME_WIDTH / 2; i < FRAME_WIDTH / 2; i += dx) {
+      for (int j = -FRAME_HEIGHT / 2; j < FRAME_HEIGHT / 2; j += dy) {
+        testCharges.add(new TestCharge(
+            viewportCenterX + i / scaleFactor,
+            viewportCenterY + j / scaleFactor));
+      }
+    }
+  }
+
+  private void verb_go_home() {
+    scaleFactor = 1;
+    centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
+    radialCount = 100;
+  }
+
+  private void verb_run_custom_command() {
+    SwingUtilities.invokeLater(() -> {
+      String command = JOptionPane.showInputDialog("Command string: ");
+      if (command == null || command.isEmpty()) {
+        return;
+      }
+
+      String[] parts = command.split("\\s*,\\s*");
+      int numTimes;
+      String methodName;
+      if (parts.length == 1) {
+        numTimes = 1;
+        methodName = parts[0];
+      } else if (parts.length == 2) {
+        numTimes = Integer.parseInt(parts[0]);
+        methodName = parts[1];
+      } else {
+        JOptionPane.showMessageDialog(null, "Error in command format. Should be '(num times) command'");
+        return;
+      }
+      methodName = methodName.replaceAll("\\s+", "_");
+      // Capitalize first letter
+      methodName = methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+      tryRunKbMethod("kb_" + methodName, numTimes);
+    });
+  }
+
 }
