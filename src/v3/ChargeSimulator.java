@@ -30,10 +30,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -45,7 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -159,6 +156,7 @@ public strictfp class ChargeSimulator extends JPanel {
   private Timer repeatTimer = new Timer();
   private Timer autosaveTimer = new Timer();
   private static final int AUTOSAVE_PERIOD_MS = 60 * 1000;
+  private static final String AUTOSAVE_SNAPSHOT_FILENAME = "autosave.snapshot";
 
   private List<Charge> mostRecent = new ArrayList<>();
   private Stack<List<Charge>> mostRecentStack = new Stack<>();
@@ -202,18 +200,10 @@ public strictfp class ChargeSimulator extends JPanel {
     // frame.setUndecorated(true);
     // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-    Random r = new Random();
-    for (int i = 0; i < 100; i++) {
-      posCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, 50 + r.nextInt(100)));
-      negCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, -200 + r.nextInt(100)));
-
-      if (i % 2 == 0) {
-        testCharges
-            .add(new TestCharge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2, r.nextInt(FRAME_HEIGHT)
-                - FRAME_HEIGHT / 2));
-      }
+    if (JOptionPane.showConfirmDialog(frame, "Load autosave?", "Welcome to ChargeSimulator", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+      loadState(AUTOSAVE_SNAPSHOT_FILENAME);
+    } else {
+      loadInitialRandomCharges();
     }
 
     setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -736,7 +726,7 @@ public strictfp class ChargeSimulator extends JPanel {
     autosaveTimer.schedule(new TimerTask() {
       @Override
       public void run() {
-        saveState("autosave.snapshot");
+        saveState(AUTOSAVE_SNAPSHOT_FILENAME);
       }
     }, AUTOSAVE_PERIOD_MS, AUTOSAVE_PERIOD_MS);
 
@@ -1287,6 +1277,22 @@ public strictfp class ChargeSimulator extends JPanel {
     }
     updating = prevUpdate;
     drawing = prevDrawing;
+  }
+
+  void loadInitialRandomCharges() {
+    Random r = new Random();
+    for (int i = 0; i < 100; i++) {
+      posCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
+          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, 50 + r.nextInt(100)));
+      negCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
+          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, -200 + r.nextInt(100)));
+
+      if (i % 2 == 0) {
+        testCharges
+            .add(new TestCharge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2, r.nextInt(FRAME_HEIGHT)
+                - FRAME_HEIGHT / 2));
+      }
+    }
   }
 
 

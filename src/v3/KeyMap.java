@@ -14,12 +14,12 @@ public class KeyMap {
   }
 
   void initialize() throws IllegalAccessException {
-    for (Field f : KeyEvent.class.getDeclaredFields()) {
-      if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
-        f.setAccessible(true);
-        nameMap.put(f.get(null), f.getName());
-      }
-    }
+    // for (Field f : KeyEvent.class.getDeclaredFields()) {
+    //   if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+    //     f.setAccessible(true);
+    //     nameMap.put(f.get(null), f.getName());
+    //   }
+    // }
 
     // for (Map.Entry<Object, String> x : nameMap.entrySet()) {
     //     //   System.out.println(x.getKey() + " -> " + x.getValue());
