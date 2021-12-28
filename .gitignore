@@ -16,5 +16,6 @@ bin/
 *.iml
 
 
-# Probably don't need to upload the various sim snapshot files
+# Probably don't need to upload the various sim snapshot files or the logs
 *.snapshot
+*.log
