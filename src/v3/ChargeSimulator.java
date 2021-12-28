@@ -6,12 +6,16 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -43,6 +47,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -601,6 +607,35 @@ public strictfp class ChargeSimulator extends JPanel {
           }, 0, 1000 / 60);
         }
 
+        if (e.getKeyCode() == KeyEvent.VK_C && e.isShiftDown()) {
+          JDialog controlPanel = new JDialog(frame, "Control Panel", true);
+          int cpw = 600;
+          int cph = 480;
+          controlPanel.setPreferredSize(new Dimension(cpw, cph));
+          controlPanel.setSize(new Dimension(cpw, cph));
+          controlPanel.setLocation((FRAME_WIDTH - cpw) / 2, (FRAME_HEIGHT - cph) / 2);
+          JButton down1 = new JButton("Down 1");
+          down1.addActionListener(e1 -> TestCharge.PARAM_1 *= 0.95);
+          JButton up1 = new JButton("Up 1");
+          up1.addActionListener(e1 -> TestCharge.PARAM_1 *= 1.05);
+          JButton down2 = new JButton("Down 2");
+          down2.addActionListener(e1 -> TestCharge.PARAM_2 *= 0.95);
+          JButton up2 = new JButton("Up 2");
+          up2.addActionListener(e1 -> TestCharge.PARAM_2 *= 1.05);
+          JButton down3 = new JButton("Down 3");
+          down3.addActionListener(e1 -> TestCharge.PARAM_3 *= 0.95);
+          JButton up3 = new JButton("Up 3");
+          up3.addActionListener(e1 -> TestCharge.PARAM_3 *= 1.05);
+          controlPanel.setLayout(new FlowLayout());
+          controlPanel.add(down1);
+          controlPanel.add(up1);
+          controlPanel.add(down2);
+          controlPanel.add(up2);
+          controlPanel.add(down3);
+          controlPanel.add(up3);
+          controlPanel.setVisible(true);
+        }
+
         if (e.getKeyCode() == KeyEvent.VK_Z) {
           if (!mostRecentStack.isEmpty()) {
             List<Charge> c = mostRecentStack.pop();
@@ -875,6 +910,9 @@ public strictfp class ChargeSimulator extends JPanel {
     offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10,
         10 + fm.getAscent() * 2);
     offG.drawString(String.format("Radial Count: %d", radialCount), 10, 10 + fm.getAscent() * 3);
+    offG.drawString(String.format("Test Charge PARAM_1: %.3f", TestCharge.PARAM_1), 10, 10 + fm.getAscent() * 4);
+    offG.drawString(String.format("Test Charge PARAM_2: %.3f", TestCharge.PARAM_2), 10, 10 + fm.getAscent() * 5);
+    offG.drawString(String.format("Test Charge PARAM_3: %.3f", TestCharge.PARAM_3), 10, 10 + fm.getAscent() * 6);
 
     // float mag = getPotentialAt(mouseX, mouseY);
     // offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,

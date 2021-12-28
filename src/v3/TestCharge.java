@@ -8,6 +8,11 @@ import java.util.List;
 
 public strictfp class TestCharge {
 
+  // public double PARAM_1 = 0.32;
+  public static double PARAM_1 = 0.49;
+  public static double PARAM_2 = 5.5;
+  public static double PARAM_3 = 10;
+
   private double x;
   private double y;
   private double vx;
@@ -59,17 +64,17 @@ public strictfp class TestCharge {
   }
 
   private double f(double d) {
-    return Math.pow(d, 0.32);
+    return Math.pow(d, PARAM_1);
   }
 
   private double g(double d) {
-    return Math.pow(d, 5.5);
+    return Math.pow(d, PARAM_2);
   }
 
   private double mag() {
     double mag = Math.sqrt(vx * vx + vy * vy);
     // System.out.println(mag);
-    return clip(g(f(mag) / 10));
+    return clip(g(f(mag) / PARAM_3));
   }
 
   private double clip(double d) {
