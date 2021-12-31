@@ -1,11 +1,11 @@
 package v3;
 
-import static v3.ChargeSimulator.ClearParticles.ALL;
-import static v3.ChargeSimulator.ClearParticles.HALF;
-import static v3.ChargeSimulator.ClearParticles.NONE;
+import static v3.ChargeSimulator.ClearParticlesOption.ALL;
+import static v3.ChargeSimulator.ClearParticlesOption.HALF;
+import static v3.ChargeSimulator.ClearParticlesOption.NONE;
 
 import java.awt.event.KeyEvent;
-import v3.ChargeSimulator.ClearParticles;
+import v3.ChargeSimulator.ClearParticlesOption;
 
 public class CommandUtils {
 
@@ -16,18 +16,18 @@ public class CommandUtils {
   }
 
   private void handleClear(KeyEvent e) {
-    ClearParticles clearParticles = e.isShiftDown() ? HALF : ALL;
+    ClearParticlesOption option = e.isShiftDown() ? HALF : ALL;
     if (e.getKeyCode() == KeyEvent.VK_X) {
-      sim.clearParticles(clearParticles, clearParticles, clearParticles);
+      sim.clearParticles(option, option, option);
     }
     if (e.getKeyCode() == KeyEvent.VK_R) {
-      sim.clearParticles(clearParticles, NONE, NONE);
+      sim.clearParticles(option, NONE, NONE);
     }
     if (e.getKeyCode() == KeyEvent.VK_B) {
-      sim.clearParticles(NONE, clearParticles, NONE);
+      sim.clearParticles(NONE, option, NONE);
     }
     if (e.getKeyCode() == KeyEvent.VK_G) {
-      sim.clearParticles(NONE, NONE, clearParticles);
+      sim.clearParticles(NONE, NONE, option);
     }
   }
 

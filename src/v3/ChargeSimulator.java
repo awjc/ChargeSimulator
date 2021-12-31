@@ -1,6 +1,6 @@
 package v3;
 
-import static v3.ChargeSimulator.ClearParticles.ALL;
+import static v3.ChargeSimulator.ClearParticlesOption.ALL;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -10,12 +10,9 @@ import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -75,6 +72,7 @@ public strictfp class ChargeSimulator extends JPanel {
     - Add open snapshot file dialog
     - MenuBar options for save/load & commands
     - Rectangle select for deletion
+    - Movie recording / exporting frames as images
    */
 
 
@@ -160,6 +158,7 @@ public strictfp class ChargeSimulator extends JPanel {
   private boolean drawPotential = false;
 
   private Timer repeatTimer = new Timer();
+  private Timer rotateTimer = null;
   private Timer autosaveTimer = new Timer();
   private static final int AUTOSAVE_PERIOD_MS = 60 * 1000;
   private static final String AUTOSAVE_SNAPSHOT_FILENAME = "autosave.snapshot";
@@ -407,7 +406,12 @@ public strictfp class ChargeSimulator extends JPanel {
         tryRunKbMethod(makeKbString(e), 1);
 
         if (e.getKeyCode() == KeyEvent.VK_D) {
-          drawing = !drawing;
+          if (e.isShiftDown()) {
+            drawing = !drawing;
+          }
+          else {
+            drawingFreq = (drawingFreq == 1) ? 2 : (drawingFreq == 2) ? 4 : 1;
+          }
         }
 
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -588,23 +592,28 @@ public strictfp class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_U) {
-          Timer t = new Timer();
-          t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-              if (updating) {
-                synchronized (posCharges) {
-                  rotateRad(posCharges, Math.toRadians(1.0));
+          if (rotateTimer == null) {
+            rotateTimer = new Timer();
+            rotateTimer.schedule(new TimerTask() {
+              @Override
+              public void run() {
+                if (updating) {
+                  synchronized (posCharges) {
+                    rotateRad(posCharges, Math.toRadians(1.0));
+                  }
                 }
-              }
 
-              if (updating) {
-                synchronized (negCharges) {
-                  rotateRad(negCharges, Math.toRadians(-1.0));
+                if (updating) {
+                  synchronized (negCharges) {
+                    rotateRad(negCharges, Math.toRadians(-1.0));
+                  }
                 }
               }
-            }
-          }, 0, 1000 / 60);
+            }, 0, 1000 / 60);
+          } else {
+            rotateTimer.cancel();
+            rotateTimer = null;
+          }
         }
 
         if (e.getKeyCode() == KeyEvent.VK_C && e.isShiftDown()) {
@@ -1209,7 +1218,7 @@ public strictfp class ChargeSimulator extends JPanel {
     return false;
   }
 
-  enum ClearParticles {
+  enum ClearParticlesOption {
     NONE,
     HALF,
     ALL
@@ -1222,7 +1231,7 @@ public strictfp class ChargeSimulator extends JPanel {
     }
   }
 
-  void clearParticles(ClearParticles clearNeg, ClearParticles clearPos, ClearParticles clearTest) {
+  void clearParticles(ClearParticlesOption clearNeg, ClearParticlesOption clearPos, ClearParticlesOption clearTest) {
     switch (clearNeg) {
       case ALL:
         synchronized (negCharges) {
