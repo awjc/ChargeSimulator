@@ -16,47 +16,47 @@
       "request": "launch",
       "mainClass": "${file}"
     },
+    // {
+    //   "type": "java",
+    //   "name": "ChargeSimulator",
+    //   "request": "launch",
+    //   "mainClass": "v1.ChargeSimulator",
+    //   "projectName": "ChargeSimulator_72926b97"
+    // },
+    // {
+    //   "type": "java",
+    //   "name": "ChargeSimulatorAparapi",
+    //   "request": "launch",
+    //   "mainClass": "v1.ChargeSimulatorAparapi",
+    //   "projectName": "ChargeSimulator_72926b97"
+    // },
+    // {
+    //   "type": "java",
+    //   "name": "ThreadPoolTest",
+    //   "request": "launch",
+    //   "mainClass": "v1.ThreadPoolTest",
+    //   "projectName": "ChargeSimulator_72926b97"
+    // },
+    // {
+    //   "type": "java",
+    //   "name": "ChargeSimulatorApplication",
+    //   "request": "launch",
+    //   "mainClass": "v2.app.ChargeSimulatorApplication",
+    //   "projectName": "ChargeSimulator_72926b97"
+    // },
     {
       "type": "java",
-      "name": "ChargeSimulator",
-      "request": "launch",
-      "mainClass": "v1.ChargeSimulator",
-      "projectName": "ChargeSimulator_72926b97"
-    },
-    {
-      "type": "java",
-      "name": "ChargeSimulatorAparapi",
-      "request": "launch",
-      "mainClass": "v1.ChargeSimulatorAparapi",
-      "projectName": "ChargeSimulator_72926b97"
-    },
-    {
-      "type": "java",
-      "name": "ThreadPoolTest",
-      "request": "launch",
-      "mainClass": "v1.ThreadPoolTest",
-      "projectName": "ChargeSimulator_72926b97"
-    },
-    {
-      "type": "java",
-      "name": "ChargeSimulatorApplication",
-      "request": "launch",
-      "mainClass": "v2.app.ChargeSimulatorApplication",
-      "projectName": "ChargeSimulator_72926b97"
-    },
-    {
-      "type": "java",
-      "name": "ChargeSimulator(1)",
+      "name": "ChargeSimulator v3",
       "request": "launch",
       "mainClass": "v3.ChargeSimulator",
       "projectName": "ChargeSimulator_72926b97"
     },
-    {
-      "type": "java",
-      "name": "ThreadPoolTest(1)",
-      "request": "launch",
-      "mainClass": "v3.ThreadPoolTest",
-      "projectName": "ChargeSimulator_72926b97"
-    }
+    // {
+    //   "type": "java",
+    //   "name": "ThreadPoolTest(1)",
+    //   "request": "launch",
+    //   "mainClass": "v3.ThreadPoolTest",
+    //   "projectName": "ChargeSimulator_72926b97"
+    // }
   ]
 }
