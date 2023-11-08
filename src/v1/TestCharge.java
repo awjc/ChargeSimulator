@@ -6,21 +6,21 @@ import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-public strictfp class TestCharge {
+public class TestCharge {
 	private double x;
 	private double y;
 	private double vx = 0;
 	private double vy = 0;
 	private boolean pos;
 	private ForceVector force = new ForceVector();
-	
+
 	public boolean first = false;
-	
+
 	private static final double SPEED_FACTOR = 0.5;
-	
+
 	private static final int TEST_CHARGE_DIAMETER = 15;
-	private static final Color TEST_CHARGE_COLOR = new Color(0, 255, 0);
-	private static final Color FIRST_COLOR = new Color(100, 255, 255);
+	// private static final Color TEST_CHARGE_COLOR = new Color(0, 255, 0);
+	// private static final Color FIRST_COLOR = new Color(100, 255, 255);
 
 	public TestCharge(double x, double y, boolean positive){
 		this.x = x;
@@ -40,7 +40,7 @@ public strictfp class TestCharge {
 //		}
 		int min = 16;
 		int gValue = min + (int) ((255 - min) * mag());
-		int rValue = 1 + (int) ((40 - 1) * mag());
+		// int rValue = 1 + (int) ((40 - 1) * mag());
 		Color newColor = new Color(0, gValue, 0);
 		g.setColor(newColor);
 		g.fillOval(centerPoint.width + (int)((x - TEST_CHARGE_DIAMETER * ChargeSimulator.chargeSize/2)*scaleFactor),
@@ -75,7 +75,7 @@ public strictfp class TestCharge {
 				double potential = c.getPotentialAt(x, y);
 				double dx = x - c.getX();
 				double dy = y - c.getY();
-				
+
 				if(pos){
 					force.feelForce(potential*dx, potential*dy);
 				} else{
@@ -83,13 +83,13 @@ public strictfp class TestCharge {
 				}
 			}
 		}
-		
+
 		synchronized(negCharges){
 			for(Charge c : negCharges){
 				double potential = c.getPotentialAt(x, y);
 				double dx = x - c.getX();
 				double dy = y - c.getY();
-				
+
 				if(pos){
 					force.feelForce(potential*dx, potential*dy);
 				} else{
@@ -100,7 +100,7 @@ public strictfp class TestCharge {
 
 		vx += force.getXComponent();
 		vy += force.getYComponent();
-		
+
 		x += vx*deltaT*SPEED_FACTOR;
 		y += vy*deltaT*SPEED_FACTOR;
 	}

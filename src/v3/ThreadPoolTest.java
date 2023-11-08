@@ -15,13 +15,13 @@ public class ThreadPoolTest {
 		private int x;
 		private int y;
 		private int dx;
-		private int dy;
+		// private int dy;
 
 		public Ball(int x, int y, int dx, int dy) {
 			this.x = x;
 			this.y = y;
 			this.dx = dx;
-			this.dy = dy;
+			// this.dy = dy;
 		}
 
 		public void update(List<Ball> balls){
@@ -61,17 +61,17 @@ public class ThreadPoolTest {
 
 		//Create a list of Runnable "tasks" to be executed
 		List<Runnable> work = new ArrayList<>();
-		
+
 		//This is the number of balls to be processed per task
 		int nBalls = balls.size() / NTASKS;
-		
+
 		//Divide up the list of balls and assign each segment to be processed in an individual task.
 		for(int i = 0; i < NTASKS; i++){
 			final int startBalls = i * nBalls;
 			final int endBalls = i < NTASKS - 1 ? (i + 1) * nBalls - 1 : balls.size() - 1;
 			final int workerNum = i + 1;
 			System.out.println(startBalls + " : " + endBalls);
-			
+
 			//Create the task as an anonymous subclass of the Runnable interface so that
 			//it can be executed and run. When the run() method has terminated, the task
 			//and its associated thread will be terminated gracefully
@@ -88,28 +88,28 @@ public class ThreadPoolTest {
 				}
 			});
 		}
-		
+
 		//Create an executor service with a certain number of threads. This number can be played with
 		//but in order to get full utilization of CPU time this number seems to work pretty well
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-		for(int i = 0; i < 5; i++){	
+		for (int i = 0; i < 5; i++) {
 			System.out.println(balls.get(0));
 			long start = System.currentTimeMillis();
-			
+
 			//A list of "Future" objects that contain info on whether or not the task is finished
 			//and any return values of the task
 			List<Future<?>> futures = new ArrayList<>();
-			
+
 			//Tell the executor which tasks we wish to execute and add them to the list of futures
 			for(Runnable r : work){
-				
+
 				//When you call .submit(), the task will begin to be executed on a new thread. This method
 				//returns a future object that can be referenced later.
 				futures.add(executor.submit(r));
 			}
 
-			
-			//the call to f.get() blocks until the future's task has terminated. By calling f.get() 
+			// the call to f.get() blocks until the future's task has terminated. By calling
+			// f.get()
 			//on all the futures we ensure that all the tasks have completed.
 			for(Future<?> f : futures){
 					try{
@@ -124,7 +124,7 @@ public class ThreadPoolTest {
 					+ " seconds");
 		}
 		System.out.println(balls.get(0));
-		
+
 		//Free any thread resources we may have been hogging
 		executor.shutdown();
 	}

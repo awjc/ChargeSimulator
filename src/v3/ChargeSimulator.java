@@ -21,6 +21,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -51,28 +53,31 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-public strictfp class ChargeSimulator extends JPanel {
+public class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.2";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.1";
 
 
 
   /*
-
-  TODO:
-    - Save & load states
-    - Computed forward path indicator
-    - Consolidate charges
-    - Write custom shapes with parametric equations
-    - Random assortment of fundamental shapes/operations instead of dull random locations
-    - maybe instead of state, store macros of key presses on which frame #, like a TAS
-      - would be easy to record & share to demonstrate an idea or reproduce an interesting pattern
-    - command to input (keycode, # of times, # of frames between times)
-    - Make better app icon
-    - Add open snapshot file dialog
-    - MenuBar options for save/load & commands
-    - Rectangle select for deletion
-    - Movie recording / exporting frames as images
+   *
+   * TO-DO:
+   * - Save & load states
+   * - Computed forward path indicator
+   * - Consolidate charges
+   * - Write custom shapes with parametric equations
+   * - Random assortment of fundamental shapes/operations instead of dull random
+   * locations
+   * - maybe instead of state, store macros of key presses on which frame #, like
+   * a TAS
+   * - would be easy to record & share to demonstrate an idea or reproduce an
+   * interesting pattern
+   * - command to input (keycode, # of times, # of frames between times)
+   * - Make better app icon
+   * - Add open snapshot file dialog
+   * - MenuBar options for save/load & commands
+   * - Rectangle select for deletion
+   * - Movie recording / exporting frames as images
    */
 
 
@@ -139,8 +144,8 @@ public strictfp class ChargeSimulator extends JPanel {
   private int prevButton = 0;
   private int prevX = 0;
   private int prevY = 0;
-  private int mouseX = 0;
-  private int mouseY = 0;
+  // private int mouseX = 0;
+  // private int mouseY = 0;
 
   private int moveX = 0;
   private int moveY = 0;
@@ -160,7 +165,7 @@ public strictfp class ChargeSimulator extends JPanel {
   private Timer repeatTimer = new Timer();
   private Timer rotateTimer = null;
   private Timer autosaveTimer = new Timer();
-  private static final int AUTOSAVE_PERIOD_MS = 60 * 1000;
+  private static final int AUTOSAVE_PERIOD_MS = 30 * 1000;
   private static final String AUTOSAVE_SNAPSHOT_FILENAME = "autosave.snapshot";
 
   private List<Charge> mostRecent = new ArrayList<>();
@@ -202,6 +207,14 @@ public strictfp class ChargeSimulator extends JPanel {
     frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
     frame.setResizable(false);
     frame.getContentPane().add(this);
+
+    frame.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent evt) {
+        saveState(AUTOSAVE_SNAPSHOT_FILENAME);
+      }
+    });
+
     // frame.setUndecorated(true);
     // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -281,8 +294,8 @@ public strictfp class ChargeSimulator extends JPanel {
     frame.getContentPane().addMouseMotionListener(new MouseMotionAdapter() {
       @Override
       public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        // mouseX = e.getX();
+        // mouseY = e.getY();
       }
 
       @Override
@@ -1368,34 +1381,37 @@ public strictfp class ChargeSimulator extends JPanel {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  @SuppressWarnings("unused")
+  // @SuppressWarnings("unused")
   void kb_Home(int unused) {
     verb_go_home();
   }
 
-  @SuppressWarnings("unused")
+  // @SuppressWarnings("unused")
   void kb_5(int numTimes) {
     enqueueUpdate(() -> verb_tc_grid(50, 50), numTimes);
   }
-  @SuppressWarnings("unused")
+
+  // @SuppressWarnings("unused")
   void kb_Shift_5(int numTimes) {
     enqueueUpdate(() -> verb_tc_grid(25, 25), numTimes);
   }
-  @SuppressWarnings("unused")
+
+  // @SuppressWarnings("unused")
   void kb_Ctrl_5(int numTimes) {
     enqueueUpdate(() -> verb_tc_grid(15, 15), numTimes);
   }
-  @SuppressWarnings("unused")
+
+  // @SuppressWarnings("unused")
   void kb_Alt_5(int numTimes) {
     enqueueUpdate(() -> verb_tc_grid(100, 100), numTimes);
   }
 
-  @SuppressWarnings("unused")
+  // @SuppressWarnings("unused")
   void kb_6(int numTimes) {
     enqueueUpdate(() -> verb_tc_circle(radialCount), numTimes);
   }
 
-  @SuppressWarnings("unused")
+  // @SuppressWarnings("unused")
   void kb_C(int numTimes) {
     verb_run_custom_command();
   }

@@ -36,7 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-public strictfp class ChargeSimulator extends JPanel {
+public class ChargeSimulator extends JPanel {
 
   private static final String VERSION_STRING = "ChargeSimulator - by awjc - v1.5";
 

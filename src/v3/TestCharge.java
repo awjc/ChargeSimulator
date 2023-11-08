@@ -6,7 +6,7 @@ import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-public strictfp class TestCharge {
+public class TestCharge {
 
   // public double PARAM_1 = 0.32;
   public static double PARAM_1 = 0.49;
@@ -24,8 +24,8 @@ public strictfp class TestCharge {
   private static final double SPEED_FACTOR = 0.5;
 
   private static final int TEST_CHARGE_DIAMETER = 15;
-  private static final Color TEST_CHARGE_COLOR = new Color(0, 255, 0);
-  private static final Color FIRST_COLOR = new Color(100, 255, 255);
+  // private static final Color TEST_CHARGE_COLOR = new Color(0, 255, 0);
+  // private static final Color FIRST_COLOR = new Color(100, 255, 255);
 
   public TestCharge(double x, double y, double vx, double vy) {
     this.x = x;

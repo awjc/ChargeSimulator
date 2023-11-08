@@ -1,13 +1,13 @@
 package v3;
 
-import java.awt.event.KeyEvent;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+// import java.awt.event.KeyEvent;
+// import java.lang.reflect.Field;
+// import java.util.HashMap;
+// import java.util.Map;
 
 public class KeyMap {
 
-  private Map<Object, String> nameMap = new HashMap<>();
+  // private Map<Object, String> nameMap = new HashMap<>();
 
   KeyMap() {
 

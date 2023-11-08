@@ -6,8 +6,6 @@ import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import v2.ui.Viewport;
-import v2.model.Animatable;
-import v2.model.Drawable;
 
 public class TestCharge extends Animatable implements Drawable {
 
