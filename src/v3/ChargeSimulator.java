@@ -57,12 +57,11 @@ public class ChargeSimulator extends JPanel {
 
   private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.1";
 
-
-
   /*
    *
    * TO-DO:
-   * - Save & load states
+   * ✓ Save & load states
+   * - Command Palette / Help text menu popup
    * - Computed forward path indicator
    * - Consolidate charges
    * - Write custom shapes with parametric equations
@@ -79,7 +78,6 @@ public class ChargeSimulator extends JPanel {
    * - Rectangle select for deletion
    * - Movie recording / exporting frames as images
    */
-
 
   public static double chargeSize = 1.0;
 
