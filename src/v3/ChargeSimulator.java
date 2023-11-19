@@ -447,7 +447,6 @@ public class ChargeSimulator extends JPanel {
                 chargeSize / CHARGE_SIZE_MULTIPLIER,
                 CHARGE_SIZE_MIN);
           }
-          System.out.println(chargeSize);
         }
 
         if (e.getKeyCode() == KeyEvent.VK_1) {

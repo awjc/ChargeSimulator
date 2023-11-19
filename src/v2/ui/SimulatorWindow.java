@@ -21,7 +21,13 @@ public class SimulatorWindow implements PhysUpdateListener {
   private static final int DRAWING_FPS = Constants.DRAWING_FPS;
   private static final int MIN_DRAWING_DELAY_MS = 1000 / DRAWING_FPS;
 
-  private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(1024, 800);
+  private static final Dimension DEFAULT_WINDOW_SIZE;
+  static {
+    Dimension scrDim = Toolkit.getDefaultToolkit().getScreenSize();
+    DEFAULT_WINDOW_SIZE = new Dimension(
+        (int) (scrDim.width * Constants.FRAME_WIDTH_SCREEN_PERCENTAGE),
+        (int) (scrDim.height * Constants.FRAME_HEIGHT_SCREEN_PERCENTAGE));
+  }
   private static final Color BG_COLOR = Constants.BG_COLOR;
 
   private SimulatorWindowState state;

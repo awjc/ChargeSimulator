@@ -30,7 +30,11 @@ public class SimulationModel {
     Random rand = new Random();
     double scale = 3e-7;
     for (int i = 0; i < 1000; i++) {
-      addAnimatable(new TestCharge(((i % 100) - 50) / 20.0, i * 0.01, (rand.nextInt(1000) - 500) * scale, (rand.nextInt(1000) - 500) * scale));
+      addAnimatable(new TestCharge(
+          ((i % 100) - 50) / 20.0,
+          i * 0.01 - 5,
+          (rand.nextInt(1000) - 500) * scale,
+          (rand.nextInt(1000) - 500) * scale));
     }
   }
 
