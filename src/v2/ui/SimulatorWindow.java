@@ -3,6 +3,7 @@ package v2.ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JFrame;
@@ -33,6 +34,8 @@ public class SimulatorWindow implements PhysUpdateListener {
 
   private SimulatorWindow(String title, Dimension size) {
     this.frame = new JFrame(title);
+    frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
+        ClassLoader.getSystemResource("resources/charges-logo.png")));
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setSize(size);
     frame.setLocationRelativeTo(null);

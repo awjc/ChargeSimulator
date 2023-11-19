@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +47,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -203,6 +207,8 @@ public class ChargeSimulator extends JPanel {
 
 
     frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
+    frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
+        ClassLoader.getSystemResource("resources/charges-logo.png")));
     frame.setResizable(false);
     frame.getContentPane().add(this);
 
