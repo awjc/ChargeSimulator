@@ -7,7 +7,7 @@ import v2.ui.SimulatorWindow;
  * Runs the simulation app
  */
 public class ChargeSimulatorApplication {
-  private static final String VERSION_STRING = "v2.1";
+  private static final String VERSION_STRING = "v2.1.1";
 
   private static final String WINDOW_TITLE =
       "Charge Simulator - by awjc - " + VERSION_STRING;

@@ -10,17 +10,18 @@ import v2.app.PhysUpdateListener;
 import v2.app.Simulation;
 import v2.model.SimulationModel;
 import v2.ui.infopanel.InfoPanel;
+import v2.Constants;
 
 /**
  * A window holding the simulator
  */
 public class SimulatorWindow implements PhysUpdateListener {
 
-  private static final int DRAWING_FPS = 60;
+  private static final int DRAWING_FPS = Constants.DRAWING_FPS;
   private static final int MIN_DRAWING_DELAY_MS = 1000 / DRAWING_FPS;
 
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(1024, 800);
-  private static final Color BG_COLOR = new Color(0, 10, 20);
+  private static final Color BG_COLOR = Constants.BG_COLOR;
 
   private SimulatorWindowState state;
   private final JFrame frame;

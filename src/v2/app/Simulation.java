@@ -9,10 +9,11 @@ import java.util.TimerTask;
 import v2.model.Animatable;
 import v2.model.SimulationModel;
 import v2.ui.Viewport;
+import v2.Constants;
 
 public class Simulation {
-  private static final int UPDATE_FPS = 60;
-  private static final int MIN_UPDATE_DELAY_MS = 1000 / UPDATE_FPS;
+  private static final int PHYSICS_FPS = Constants.PHYSICS_FPS;
+  private static final int MIN_UPDATE_DELAY_MS = 1000 / PHYSICS_FPS;
   private final Collection<PhysUpdateListener> physUpdateListeners;
 
   private SimulationModel model;
