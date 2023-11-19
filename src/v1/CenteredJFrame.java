@@ -1,16 +1,16 @@
-package v1;
+// package v1;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import javax.swing.JFrame;
+// import java.awt.Dimension;
+// import java.awt.Toolkit;
+// import javax.swing.JFrame;
 
-class CenteredJFrame extends JFrame {
+// class CenteredJFrame extends JFrame {
 
-  CenteredJFrame(String title, int width, int height) {
-    super(title);
-    setSize(width, height);
-    Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
-    setLocation((scrSize.width - width) / 2, (scrSize.height - height) / 2);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-  }
-}
+// CenteredJFrame(String title, int width, int height) {
+// super(title);
+// setSize(width, height);
+// Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
+// setLocation((scrSize.width - width) / 2, (scrSize.height - height) / 2);
+// setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+// }
+// }

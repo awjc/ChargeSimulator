@@ -55,7 +55,7 @@ import javax.swing.SwingUtilities;
 
 public class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.1";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.2";
 
   /*
    *
@@ -81,9 +81,9 @@ public class ChargeSimulator extends JPanel {
 
   public static double chargeSize = 1.0;
 
-  private final List<Double> chargeSizes = Arrays
-      .asList(1.0, 0.333, 0.1, 0.3333, 1.001, 3.33, 10.0, 3.333);
-
+  public static final double CHARGE_SIZE_MIN = 0.1;
+  public static final double CHARGE_SIZE_MAX = 10.0;
+  public static final double CHARGE_SIZE_MULTIPLIER = 1.5;
 
   private final List<List<Runnable>> updatesToRunNext = new LinkedList<>();
 
@@ -431,10 +431,15 @@ public class ChargeSimulator extends JPanel {
 
         if (e.getKeyCode() == KeyEvent.VK_O) {
           if (e.isShiftDown()) {
-            chargeSize = chargeSizes.stream().min(Double::compareTo).get();
+            // Step charge up
+            chargeSize = Math.min(
+                chargeSize * CHARGE_SIZE_MULTIPLIER,
+                CHARGE_SIZE_MAX);
           } else {
-            chargeSize = chargeSizes
-                .get((chargeSizes.indexOf(chargeSize) + 1) % chargeSizes.size());
+            // Step charge down
+            chargeSize = Math.max(
+                chargeSize / CHARGE_SIZE_MULTIPLIER,
+                CHARGE_SIZE_MIN);
           }
           System.out.println(chargeSize);
         }
@@ -883,6 +888,12 @@ public class ChargeSimulator extends JPanel {
     // }, 0, 1000 / updateFPS);
   }
 
+  int linesDone = 0;
+
+  int nextLineY(FontMetrics fm) {
+    return (10 + fm.getAscent() * (linesDone++));
+  }
+
   @Override
   public void paintComponent(Graphics g) {
     if (centerPos == null) {
@@ -925,14 +936,16 @@ public class ChargeSimulator extends JPanel {
     doGreenBalls();
 
     offG.setColor(Color.WHITE);
+    linesDone = 0;
     FontMetrics fm = offG.getFontMetrics();
-    offG.drawString(String.format("Zoom: %.2f%%", scaleFactor * 100), 10, 10 + fm.getAscent());
-    offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), 10,
-        10 + fm.getAscent() * 2);
-    offG.drawString(String.format("Radial Count: %d", radialCount), 10, 10 + fm.getAscent() * 3);
-    offG.drawString(String.format("Test Charge PARAM_1: %.3f", TestCharge.PARAM_1), 10, 10 + fm.getAscent() * 4);
-    offG.drawString(String.format("Test Charge PARAM_2: %.3f", TestCharge.PARAM_2), 10, 10 + fm.getAscent() * 5);
-    offG.drawString(String.format("Test Charge PARAM_3: %.3f", TestCharge.PARAM_3), 10, 10 + fm.getAscent() * 6);
+    int xOffset = 10;
+    offG.drawString(String.format("Zoom: %.2f%%", scaleFactor * 100), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Physics Speed: %.2f", physicsSpeedFactor), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Radial Count: %d", radialCount), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Charge display size: %.2f", chargeSize), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Test Charge PARAM_1: %.3f", TestCharge.PARAM_1), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Test Charge PARAM_2: %.3f", TestCharge.PARAM_2), xOffset, nextLineY(fm));
+    offG.drawString(String.format("Test Charge PARAM_3: %.3f", TestCharge.PARAM_3), xOffset, nextLineY(fm));
 
     // float mag = getPotentialAt(mouseX, mouseY);
     // offG.drawString(String.format("Mouse: (%d, %d), Potential: %.2f", mouseX, mouseY, mag), 10,
@@ -1453,6 +1466,7 @@ public class ChargeSimulator extends JPanel {
     scaleFactor = 1;
     centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
     radialCount = 100;
+    chargeSize = 1.0;
   }
 
   private void verb_run_custom_command() {
