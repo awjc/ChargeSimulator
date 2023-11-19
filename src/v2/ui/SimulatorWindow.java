@@ -46,9 +46,7 @@ public class SimulatorWindow implements PhysUpdateListener {
     frame.setSize(size);
     frame.setLocationRelativeTo(null);
     infoPanel = makeInfoPanel();
-    DoubleBufferedPanel contentPanel = new DoubleBufferedPanel(
-        infoPanel,
-        (Graphics g) -> state.sim.draw(state.viewport, frame.getSize(), g));
+    DoubleBufferedPanel contentPanel = new DoubleBufferedPanel(this::draw);
     contentPanel.setBackground(BG_COLOR);
 
     frame.setContentPane(contentPanel);
@@ -56,6 +54,11 @@ public class SimulatorWindow implements PhysUpdateListener {
 
   private InfoPanel makeInfoPanel() {
     return InfoPanel.createDefault();
+  }
+
+  private void draw(Graphics g) {
+    state.sim.draw(state.viewport, frame.getSize(), g);
+    infoPanel.draw(g);
   }
 
   /**
@@ -72,7 +75,7 @@ public class SimulatorWindow implements PhysUpdateListener {
       public void run() {
         doDrawNow();
       }
-    }, 50, MIN_DRAWING_DELAY_MS);
+    }, 0, MIN_DRAWING_DELAY_MS);
   }
 
   /** Immediately draws the component */

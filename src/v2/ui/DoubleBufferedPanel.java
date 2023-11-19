@@ -6,16 +6,13 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.util.function.Consumer;
 import javax.swing.JPanel;
-import v2.ui.infopanel.InfoPanel;
 
 public class DoubleBufferedPanel extends JPanel {
   private Image offScrImg;
   private Graphics offG;
   private final Consumer<Graphics> drawFn;
-  private final InfoPanel infoPanel;
 
-  DoubleBufferedPanel(InfoPanel infoPanel, Consumer<Graphics> drawFn) {
-    this.infoPanel = infoPanel;
+  DoubleBufferedPanel(Consumer<Graphics> drawFn) {
     this.drawFn = drawFn;
   }
 
@@ -42,13 +39,10 @@ public class DoubleBufferedPanel extends JPanel {
       offG = getGraphicsForImage(offScrImg);
     }
 
-
     offG.setColor(getBackground());
     offG.fillRect(0, 0, getWidth(), getHeight());
 
     drawFn.accept(offG);
-
-    infoPanel.draw(offG);
 
     if (g != null) {
       g.drawImage(offScrImg, getX(), getY(), null);
