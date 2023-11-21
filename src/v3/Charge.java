@@ -83,15 +83,15 @@ public class Charge {
 	}
 
 	String toSerializedString() {
-		return String.format("%s %s %s", Double.toString(x), Double.toString(y), Double.toString(q));
+		return String.format("C %s %s %s", Double.toString(x), Double.toString(y), Double.toString(q));
 	}
 
 	static Charge fromSerializedString(String encoded) {
 		String[] parts = encoded.split(" ");
-		assert parts.length == 3;
-		double x = Double.valueOf(parts[0]);
-		double y = Double.valueOf(parts[1]);
-		double q = Double.valueOf(parts[2]);
+		assert parts.length == 4;
+		double x = Double.valueOf(parts[1]);
+		double y = Double.valueOf(parts[2]);
+		double q = Double.valueOf(parts[3]);
 		return new Charge(x, y, q);
 	}
 }

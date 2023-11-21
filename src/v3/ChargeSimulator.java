@@ -1317,6 +1317,10 @@ public class ChargeSimulator extends JPanel {
       for (Charge posCharge : posCharges) {
         out.println(posCharge.toSerializedString());
       }
+      out.println(String.format("TestChargeColorParams %f %f %f",
+          TestCharge.PARAM_1, TestCharge.PARAM_2, TestCharge.PARAM_3));
+      out.println(String.format("RC %d", radialCount));
+      out.println(String.format("CS %f", chargeSize));
       out.close();
       System.out.println(String.format("Succesfully wrote save state to file \"%s\"", filename));
     } catch (FileNotFoundException e) {
@@ -1336,9 +1340,23 @@ public class ChargeSimulator extends JPanel {
       clearParticles(ALL, ALL, ALL);
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
-        if (line.startsWith("T")) {
+        if (line.startsWith("TestChargeColorParams")) {
+          String[] params = line.split(" ");
+          assert params.length == 4;
+          TestCharge.PARAM_1 = Double.parseDouble(params[1]);
+          TestCharge.PARAM_2 = Double.parseDouble(params[2]);
+          TestCharge.PARAM_3 = Double.parseDouble(params[3]);
+        } else if (line.startsWith("RC")) {
+          String[] parts = line.split(" ");
+          assert parts.length == 2;
+          radialCount = Integer.parseInt(parts[1]);
+        } else if (line.startsWith("CS")) {
+          String[] parts = line.split(" ");
+          assert parts.length == 2;
+          chargeSize = Double.parseDouble(parts[1]);
+        } else if (line.startsWith("T")) {
           testCharges.add(TestCharge.fromSerializedString(line));
-        } else {
+        } else if (line.startsWith("C")) {
           Charge charge = Charge.fromSerializedString(line);
           if (charge.getCharge() < 0) {
             negCharges.add(charge);
