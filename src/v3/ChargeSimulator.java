@@ -1308,6 +1308,10 @@ public class ChargeSimulator extends JPanel {
     drawing = false;
     try {
       PrintWriter out = new PrintWriter(new FileOutputStream(filename));
+      out.println(String.format("TestChargeColorParams %f %f %f",
+          TestCharge.PARAM_1, TestCharge.PARAM_2, TestCharge.PARAM_3));
+      out.println(String.format("RC %d", radialCount));
+      out.println(String.format("CS %f", chargeSize));
       for (TestCharge testCharge : testCharges) {
         out.println(testCharge.toSerializedString());
       }
@@ -1317,10 +1321,6 @@ public class ChargeSimulator extends JPanel {
       for (Charge posCharge : posCharges) {
         out.println(posCharge.toSerializedString());
       }
-      out.println(String.format("TestChargeColorParams %f %f %f",
-          TestCharge.PARAM_1, TestCharge.PARAM_2, TestCharge.PARAM_3));
-      out.println(String.format("RC %d", radialCount));
-      out.println(String.format("CS %f", chargeSize));
       out.close();
       System.out.println(String.format("Succesfully wrote save state to file \"%s\"", filename));
     } catch (FileNotFoundException e) {
