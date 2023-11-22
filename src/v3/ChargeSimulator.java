@@ -127,8 +127,8 @@ public class ChargeSimulator extends JPanel {
     FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
   }
 
-  private static final double drawingFPS = 25;
-  // private static final int updateFPS = 30;
+  private static final double DRAWING_FPS = 25;
+  // private static final int UPDATE_FPS = 30;
 
   private volatile boolean updating = true;
   private volatile boolean drawing = true;
@@ -879,7 +879,7 @@ public class ChargeSimulator extends JPanel {
         }
         // repaint();
       }
-    }, 0, (int) (1000 / drawingFPS));
+    }, 0, (int) (1000 / DRAWING_FPS));
 
     // Timer updateTimer = new Timer();
     // updateTimer.schedule(new TimerTask(){
@@ -1205,7 +1205,7 @@ public class ChargeSimulator extends JPanel {
             }
 
 //						for(int j=0; j < 10; j++)
-            testCharges.get(i).update(posCharges, negCharges, physicsSpeedFactor / drawingFPS);
+            testCharges.get(i).update(posCharges, negCharges, physicsSpeedFactor / DRAWING_FPS);
           }
         }
       });
@@ -1301,6 +1301,12 @@ public class ChargeSimulator extends JPanel {
     }
   }
 
+  double pullDoubleParam(String line) {
+    String[] parts = line.split(" ");
+    assert parts.length == 2;
+    return Double.parseDouble(parts[1]);
+  }
+
   void saveState(String filename) {
     boolean prevUpdate = updating;
     boolean prevDrawing = drawing;
@@ -1312,6 +1318,9 @@ public class ChargeSimulator extends JPanel {
           TestCharge.PARAM_1, TestCharge.PARAM_2, TestCharge.PARAM_3));
       out.println(String.format("RC %d", radialCount));
       out.println(String.format("CS %f", chargeSize));
+      out.println(String.format("PSF %f", physicsSpeedFactor));
+      out.println(String.format("CP %d %d", centerPos.width, centerPos.height));
+      out.println(String.format("SF %f", scaleFactor));
       for (TestCharge testCharge : testCharges) {
         out.println(testCharge.toSerializedString());
       }
@@ -1340,29 +1349,36 @@ public class ChargeSimulator extends JPanel {
       clearParticles(ALL, ALL, ALL);
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
-        if (line.startsWith("TestChargeColorParams")) {
+        if (line.startsWith("TestChargeColorParams ")) {
           String[] params = line.split(" ");
           assert params.length == 4;
           TestCharge.PARAM_1 = Double.parseDouble(params[1]);
           TestCharge.PARAM_2 = Double.parseDouble(params[2]);
           TestCharge.PARAM_3 = Double.parseDouble(params[3]);
-        } else if (line.startsWith("RC")) {
+        } else if (line.startsWith("RC ")) {
           String[] parts = line.split(" ");
           assert parts.length == 2;
           radialCount = Integer.parseInt(parts[1]);
-        } else if (line.startsWith("CS")) {
-          String[] parts = line.split(" ");
-          assert parts.length == 2;
-          chargeSize = Double.parseDouble(parts[1]);
-        } else if (line.startsWith("T")) {
+        } else if (line.startsWith("CS ")) {
+          chargeSize = pullDoubleParam(line);
+        } else if (line.startsWith("T ")) {
           testCharges.add(TestCharge.fromSerializedString(line));
-        } else if (line.startsWith("C")) {
+        } else if (line.startsWith("C ")) {
           Charge charge = Charge.fromSerializedString(line);
           if (charge.getCharge() < 0) {
             negCharges.add(charge);
           } else {
             posCharges.add(charge);
           }
+        } else if (line.startsWith("PSF ")) {
+          physicsSpeedFactor = pullDoubleParam(line);
+        } else if (line.startsWith("CP ")) {
+          String[] parts = line.split(" ");
+          assert parts.length == 3;
+          centerPos = new Dimension(
+              Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+        } else if (line.startsWith("SF ")) {
+          scaleFactor = pullDoubleParam(line);
         }
       }
       System.out.println(String.format("Succesfully loaded save state from file \"%s\"", filename));

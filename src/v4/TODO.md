@@ -1,6 +1,8 @@
 
 # ChargeSimulator v4 TODO
 - Make v4 engine with v2 engine + v3 keybindings
+- Add Settings object to serialize/deserialize itself
+- Line operations, draw rectangle/ellipse/splines, SVG editor
 
 From v3:
    * TO-DO:
