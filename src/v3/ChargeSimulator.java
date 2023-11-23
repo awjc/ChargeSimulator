@@ -207,8 +207,9 @@ public class ChargeSimulator extends JPanel {
 
 
     frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
-    frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
-        ClassLoader.getSystemResource("resources/charges-logo.png")));
+    Image logo = Toolkit.getDefaultToolkit().getImage(
+        ClassLoader.getSystemResource("resources/charges-logo.png"));
+    frame.setIconImage(logo);
     frame.setResizable(false);
     frame.getContentPane().add(this);
 
@@ -222,10 +223,16 @@ public class ChargeSimulator extends JPanel {
     // frame.setUndecorated(true);
     // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-    if (JOptionPane.showConfirmDialog(frame, "Load autosave?", "Welcome to ChargeSimulator", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+    int loadAutosaveResponse = JOptionPane.showConfirmDialog(
+        frame, "Load autosave?", "Welcome to ChargeSimulator",
+        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+        new ImageIcon(logo.getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+    if (loadAutosaveResponse == JOptionPane.YES_OPTION) {
       loadState(AUTOSAVE_SNAPSHOT_FILENAME);
-    } else {
+    } else if (loadAutosaveResponse == JOptionPane.NO_OPTION) {
       loadInitialRandomCharges();
+    } else {
+      System.exit(0);
     }
 
     setCursor(new Cursor(Cursor.HAND_CURSOR));
