@@ -8,10 +8,18 @@ import java.util.List;
 
 public class TestCharge {
 
-  // public double PARAM_1 = 0.32;
-  public static double PARAM_1 = 0.49;
-  public static double PARAM_2 = 5.5;
-  public static double PARAM_3 = 10;
+  public static final double DEFAULT_PARAM_1 = 0.49;
+  public static double PARAM_1 = DEFAULT_PARAM_1;
+  public static final double DEFAULT_PARAM_2 = 5.5;
+  public static double PARAM_2 = DEFAULT_PARAM_2;
+  public static final double DEFAULT_PARAM_3 = 10.0;
+  public static double PARAM_3 = DEFAULT_PARAM_3;
+
+  public static void resetParamsToDefault() {
+    PARAM_1 = DEFAULT_PARAM_1;
+    PARAM_2 = DEFAULT_PARAM_2;
+    PARAM_3 = DEFAULT_PARAM_3;
+  }
 
   private double x;
   private double y;

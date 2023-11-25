@@ -3,6 +3,7 @@
 - Make v4 engine with v2 engine + v3 keybindings
 - Add Settings object to serialize/deserialize itself
 - Line operations, draw rectangle/ellipse/splines, SVG editor
+- Implement undo/redo for TestCharges (would be easier if TC & C shared superclass)
 
 From v3:
    * TO-DO:

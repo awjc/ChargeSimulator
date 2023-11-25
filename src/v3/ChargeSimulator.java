@@ -83,7 +83,8 @@ public class ChargeSimulator extends JPanel {
    * - Movie recording / exporting frames as images
    */
 
-  public static double chargeSize = 1.0;
+  public static final double DEFAULT_CHARGE_SIZE = 1.0;
+  public static double chargeSize = DEFAULT_CHARGE_SIZE;
 
   public static final double CHARGE_SIZE_MIN = 0.1;
   public static final double CHARGE_SIZE_MAX = 10.0;
@@ -103,16 +104,8 @@ public class ChargeSimulator extends JPanel {
    */
   private double physicsSpeedFactor = 1.0;
 
-  public static void main(String[] args) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        ChargeSimulator sim = new ChargeSimulator();
-        sim.setCommandUtils(new CommandUtils(sim));
-        sim.run();
-      }
-    });
-  }
+  private static final int DEFAULT_RADIAL_COUNT = 100;
+  private int radialCount = DEFAULT_RADIAL_COUNT;
 
   private static final int REPEAT_DELAY = 250;
 
@@ -146,8 +139,6 @@ public class ChargeSimulator extends JPanel {
   private int prevButton = 0;
   private int prevX = 0;
   private int prevY = 0;
-  // private int mouseX = 0;
-  // private int mouseY = 0;
 
   private int moveX = 0;
   private int moveY = 0;
@@ -156,7 +147,8 @@ public class ChargeSimulator extends JPanel {
 
   private int drawingFreq = 1;
 
-  private double scaleFactor = 1;
+  private static final double DEFAULT_SCALE_FACTOR = 1.0;
+  private double scaleFactor = DEFAULT_SCALE_FACTOR;
   private static final double MIN_SCALING_FACTOR = 0.001;
   private static final double MAX_SCALING_FACTOR = 100;
 
@@ -183,7 +175,6 @@ public class ChargeSimulator extends JPanel {
 
   private ExecutorService executor = Executors
       .newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-  ;
 
   private CommandUtils commandUtils;
 
@@ -192,6 +183,19 @@ public class ChargeSimulator extends JPanel {
   }
 
   private KeyMap keymap = new KeyMap();
+
+  public static void main(String[] args) {
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        ChargeSimulator sim = new ChargeSimulator();
+        sim.setCommandUtils(new CommandUtils(sim));
+        sim.run();
+      }
+    });
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   public ChargeSimulator() {
     try {
@@ -220,20 +224,7 @@ public class ChargeSimulator extends JPanel {
       }
     });
 
-    // frame.setUndecorated(true);
-    // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-    int loadAutosaveResponse = JOptionPane.showConfirmDialog(
-        frame, "Load autosave?", "Welcome to ChargeSimulator",
-        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-        new ImageIcon(logo.getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
-    if (loadAutosaveResponse == JOptionPane.YES_OPTION) {
-      loadState(AUTOSAVE_SNAPSHOT_FILENAME);
-    } else if (loadAutosaveResponse == JOptionPane.NO_OPTION) {
-      loadInitialRandomCharges();
-    } else {
-      System.exit(0);
-    }
+    loadState(AUTOSAVE_SNAPSHOT_FILENAME);
 
     setCursor(new Cursor(Cursor.HAND_CURSOR));
     MouseListener l = new MouseAdapter() {
@@ -321,14 +312,15 @@ public class ChargeSimulator extends JPanel {
 
         Charge c = null;
         if (prevButton == MouseEvent.BUTTON1) {
-          c = new Charge((e.getX() - centerPos.width) / scaleFactor, (e.getY() - centerPos.height)
-              / scaleFactor, 100);
+          c = new Charge((e.getX() - centerPos.width) / scaleFactor,
+              (e.getY() - centerPos.height) / scaleFactor, 100);
         } else if (prevButton == MouseEvent.BUTTON3) {
-          c = new Charge((e.getX() - centerPos.width) / scaleFactor, (e.getY() - centerPos.height)
-              / scaleFactor, -100);
+          c = new Charge((e.getX() - centerPos.width) / scaleFactor,
+              (e.getY() - centerPos.height) / scaleFactor, -100);
         } else {
           synchronized (testCharges) {
-            testCharges.add(new TestCharge((e.getX() - centerPos.width) / scaleFactor,
+            testCharges.add(new TestCharge(
+                (e.getX() - centerPos.width) / scaleFactor,
                 (e.getY() - centerPos.height) / scaleFactor));
           }
         }
@@ -439,7 +431,24 @@ public class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-          System.exit(0);
+          frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+          boolean prevDrawing = drawing;
+          boolean prevUpdating = updating;
+          drawing = false;
+          updating = false;
+          int resetSimConfirm = JOptionPane.showConfirmDialog(frame,
+              "Reset simulation to initial configuration?", "ChargeSimulator - Reset?",
+              JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+          if (resetSimConfirm == JOptionPane.YES_OPTION) {
+            loadInitialRandomCharges();
+            TestCharge.resetParamsToDefault();
+            verb_go_home();
+          }
+          drawing = prevDrawing;
+          updating = prevUpdating;
         }
 
         if (e.getKeyCode() == KeyEvent.VK_O) {
@@ -815,8 +824,6 @@ public class ChargeSimulator extends JPanel {
     }
   }
 
-  private int radialCount = 100;
-
   private boolean ignoreNext = false;
 
 //	private void consolidateCharges(){
@@ -897,20 +904,18 @@ public class ChargeSimulator extends JPanel {
     // else
     // lastUpdateTime = System.currentTimeMillis();
     // }
-    // }, 0, 1000 / updateFPS);
+    // }, 0, 1000 / UPDATE_FPS);
   }
 
   int linesDone = 0;
 
   int nextLineY(FontMetrics fm) {
-    return (10 + fm.getAscent() * (linesDone++));
+    return (15 + fm.getAscent() * (linesDone++));
   }
 
   @Override
   public void paintComponent(Graphics g) {
     if (centerPos == null) {
-      // System.out.println(getHeight() + " : " + frame.getHeight() +
-      // " : " + frame.getContentPane().getHeight());
       centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
     }
 
@@ -1397,21 +1402,44 @@ public class ChargeSimulator extends JPanel {
   }
 
   void loadInitialRandomCharges() {
-    Random r = new Random();
-    for (int i = 0; i < 100; i++) {
-      posCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, 50 + r.nextInt(100)));
-      negCharges.add(new Charge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-          r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2, -200 + r.nextInt(100)));
+    boolean prevUpdate = updating;
+    boolean prevDrawing = drawing;
+    updating = false;
+    drawing = false;
 
-      if (i % 2 == 0) {
-        testCharges
-            .add(new TestCharge(r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2, r.nextInt(FRAME_HEIGHT)
-                - FRAME_HEIGHT / 2));
+    Random r = new Random();
+    synchronized (posCharges) {
+      posCharges.clear();
+      for (int i = 0; i < 100; i++) {
+        posCharges.add(new Charge(
+            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
+            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2,
+            50 + r.nextInt(100)));
       }
     }
-  }
 
+    synchronized (negCharges) {
+      negCharges.clear();
+      for (int i = 0; i < 100; i++) {
+        negCharges.add(new Charge(
+            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
+            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2,
+            -200 + r.nextInt(100)));
+      }
+    }
+
+    synchronized (testCharges) {
+      testCharges.clear();
+      for (int i = 0; i < 50; i++) {
+        testCharges.add(new TestCharge(
+            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
+            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2));
+      }
+    }
+
+    updating = prevUpdate;
+    drawing = prevDrawing;
+  }
 
   private String makeKbString(KeyEvent e) {
     String methodName = "kb_";
@@ -1509,10 +1537,10 @@ public class ChargeSimulator extends JPanel {
   }
 
   private void verb_go_home() {
-    scaleFactor = 1;
+    scaleFactor = DEFAULT_SCALE_FACTOR;
     centerPos = new Dimension(frame.getWidth() / 2, frame.getHeight() / 2);
-    radialCount = 100;
-    chargeSize = 1.0;
+    radialCount = DEFAULT_RADIAL_COUNT;
+    chargeSize = DEFAULT_CHARGE_SIZE;
   }
 
   private void verb_run_custom_command() {
