@@ -9,6 +9,20 @@
       "name": "ChargeSimulatorApplication",
       "request": "launch",
       "mainClass": "v2.app.ChargeSimulatorApplication",
+      "projectName": "ChargeSimulator_27d646e5"
+    },
+    {
+      "type": "java",
+      "name": "ChargeSimulator",
+      "request": "launch",
+      "mainClass": "v3.ChargeSimulator",
+      "projectName": "ChargeSimulator_27d646e5"
+    },
+    {
+      "type": "java",
+      "name": "ChargeSimulatorApplication",
+      "request": "launch",
+      "mainClass": "v2.app.ChargeSimulatorApplication",
       "projectName": "ChargeSimulator_72926b97"
     },
     {

@@ -59,7 +59,7 @@ import javax.swing.SwingUtilities;
 
 public class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.2";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.3";
 
   /*
    *
@@ -1393,6 +1393,7 @@ public class ChargeSimulator extends JPanel {
           scaleFactor = pullDoubleParam(line);
         }
       }
+      scanner.close();
       System.out.println(String.format("Succesfully loaded save state from file \"%s\"", filename));
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -1560,7 +1561,7 @@ public class ChargeSimulator extends JPanel {
         numTimes = Integer.parseInt(parts[0]);
         methodName = parts[1];
       } else {
-        JOptionPane.showMessageDialog(null, "Error in command format. Should be '(num times) command'");
+        JOptionPane.showMessageDialog(null, "Error in command format. Should be '(num times),command'");
         return;
       }
       methodName = methodName.replaceAll("\\s+", "_");

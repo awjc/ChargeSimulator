@@ -19,3 +19,5 @@ bin/
 # Probably don't need to upload the various sim snapshot files or the logs
 *.snapshot
 *.log
+
+**/.DS_Store
