@@ -120,7 +120,7 @@ public class ChargeSimulator extends JPanel {
     FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
   }
 
-  private static final double DRAWING_FPS = 25;
+  private static final double DRAWING_FPS = 144;
   // private static final int UPDATE_FPS = 30;
 
   private volatile boolean updating = true;

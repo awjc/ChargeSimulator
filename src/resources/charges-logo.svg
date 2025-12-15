@@ -29,8 +29,8 @@
      inkscape:cy="243.47826"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
-     inkscape:window-x="-8"
-     inkscape:window-y="564"
+     inkscape:window-x="1432"
+     inkscape:window-y="585"
      inkscape:window-maximized="1"
      inkscape:current-layer="g1" />
   <g
@@ -73,6 +73,6 @@
        cx="310"
        stroke="#000"
        fill="#0000ff"
-       style="stroke-width:4;stroke-dasharray:none" />
+       style="stroke-width:4;stroke-dasharray:none;fill:#0040ff;fill-opacity:1" />
   </g>
 </svg>
