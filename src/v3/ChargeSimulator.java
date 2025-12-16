@@ -59,7 +59,7 @@ import javax.swing.SwingUtilities;
 
 public class ChargeSimulator extends JPanel {
 
-  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.3";
+  private static final String VERSION_STRING = "ChargeSimulator - by awjc - v3.4.4";
 
   /*
    *
