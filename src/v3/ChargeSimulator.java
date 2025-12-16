@@ -214,7 +214,7 @@ public class ChargeSimulator extends JPanel {
     Image logo = Toolkit.getDefaultToolkit().getImage(
         ClassLoader.getSystemResource("resources/charges-logo.png"));
     frame.setIconImage(logo);
-    frame.setResizable(false);
+    frame.setResizable(true);
     frame.getContentPane().add(this);
 
     frame.addWindowListener(new WindowAdapter() {
