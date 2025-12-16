@@ -109,15 +109,15 @@ public class ChargeSimulator extends JPanel {
 
   private static final int REPEAT_DELAY = 250;
 
-  private final int FRAME_WIDTH;
-  private final int FRAME_HEIGHT;
+  private final int DEFAULT_FRAME_WIDTH;
+  private final int DEFAULT_FRAME_HEIGHT;
   private static final double FRAME_WIDTH_SCREEN_PERCENTAGE = 0.85;
   private static final double FRAME_HEIGHT_SCREEN_PERCENTAGE = 0.9;
 
   {
     Dimension scrDim = Toolkit.getDefaultToolkit().getScreenSize();
-    FRAME_WIDTH = (int) (scrDim.width * FRAME_WIDTH_SCREEN_PERCENTAGE);
-    FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
+    DEFAULT_FRAME_WIDTH = (int) (scrDim.width * FRAME_WIDTH_SCREEN_PERCENTAGE);
+    DEFAULT_FRAME_HEIGHT = (int) (scrDim.height * FRAME_HEIGHT_SCREEN_PERCENTAGE);
   }
 
   private static final double DRAWING_FPS = 144;
@@ -210,7 +210,7 @@ public class ChargeSimulator extends JPanel {
     }
 
 
-    frame = new CenteredJFrame(VERSION_STRING, FRAME_WIDTH, FRAME_HEIGHT);
+    frame = new CenteredJFrame(VERSION_STRING, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT);
     Image logo = Toolkit.getDefaultToolkit().getImage(
         ClassLoader.getSystemResource("resources/charges-logo.png"));
     frame.setIconImage(logo);
@@ -471,8 +471,8 @@ public class ChargeSimulator extends JPanel {
             for (int i = 0; i < 50; i++) {
               synchronized (testCharges) {
                 testCharges
-                    .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
-                        (r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor));
+                    .add(new TestCharge((r.nextInt(getWidth()) - getWidth() / 2) / scaleFactor,
+                        (r.nextInt(getHeight()) - getHeight() / 2) / scaleFactor));
               }
             }
           });
@@ -482,11 +482,11 @@ public class ChargeSimulator extends JPanel {
           enqueueUpdate(() -> {
             int nCols = 50;
             int nRows = 30;
-            for (int i = 0; i < FRAME_WIDTH; i += FRAME_WIDTH / nCols) {
-              for (int j = 0; j < FRAME_HEIGHT; j += FRAME_HEIGHT / nRows) {
+            for (int i = 0; i < getWidth(); i += getWidth() / nCols) {
+              for (int j = 0; j < getHeight(); j += getHeight() / nRows) {
                 synchronized (posCharges) {
                   posCharges
-                      .add(new Charge((i - FRAME_WIDTH / 2) / scaleFactor, (j - FRAME_HEIGHT / 2)
+                      .add(new Charge((i - getWidth() / 2) / scaleFactor, (j - getHeight() / 2)
                           / scaleFactor, 400));
                 }
               }
@@ -500,24 +500,24 @@ public class ChargeSimulator extends JPanel {
             for (int i = 0; i < 1000; i++) {
               synchronized (testCharges) {
                 testCharges
-                    .add(new TestCharge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor,
-                        (r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor));
+                    .add(new TestCharge((r.nextInt(getWidth()) - getWidth() / 2) / scaleFactor,
+                        (r.nextInt(getHeight()) - getHeight() / 2) / scaleFactor));
               }
             }
 
             for (int i = 0; i < 1000; i++) {
               synchronized (posCharges) {
                 posCharges
-                    .add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                        .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, 200));
+                    .add(new Charge((r.nextInt(getWidth()) - getWidth() / 2) / scaleFactor, (r
+                        .nextInt(getHeight()) - getHeight() / 2) / scaleFactor, 200));
               }
             }
 
             for (int i = 0; i < 1000; i++) {
               synchronized (negCharges) {
                 negCharges
-                    .add(new Charge((r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2) / scaleFactor, (r
-                        .nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2) / scaleFactor, -200));
+                    .add(new Charge((r.nextInt(getWidth()) - getWidth() / 2) / scaleFactor, (r
+                        .nextInt(getHeight()) - getHeight() / 2) / scaleFactor, -200));
               }
             }
           });
@@ -530,8 +530,8 @@ public class ChargeSimulator extends JPanel {
             List<Charge> charges = new ArrayList<>();
             // double xx = centerPos.getWidth();
             // double yy = centerPos.getHeight();
-            int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-            int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+            int viewportCenterX = (int) ((getWidth() / 2 - centerPos.width) / scaleFactor);
+            int viewportCenterY = (int) ((getHeight() / 2 - centerPos.height) / scaleFactor);
 
             for (int i = 0; i < nCharges; i++) {
               double theta = i * Math.PI * 2 / nCharges;
@@ -554,7 +554,7 @@ public class ChargeSimulator extends JPanel {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_7) {
-          System.out.println("Frame size: " + FRAME_WIDTH + " x " + FRAME_HEIGHT + " @ " + String
+          System.out.println("Frame size: " + getWidth() + " x " + getHeight() + " @ " + String
               .format("%.4f", scaleFactor));
           System.out.println(String.format("center: (%d, %d)", centerPos.width, centerPos.height));
         }
@@ -659,7 +659,7 @@ public class ChargeSimulator extends JPanel {
           int cph = 480;
           controlPanel.setPreferredSize(new Dimension(cpw, cph));
           controlPanel.setSize(new Dimension(cpw, cph));
-          controlPanel.setLocation((FRAME_WIDTH - cpw) / 2, (FRAME_HEIGHT - cph) / 2);
+          controlPanel.setLocation((getWidth() - cpw) / 2, (getHeight() - cph) / 2);
           JButton down1 = new JButton("Down 1");
           down1.addActionListener(e1 -> TestCharge.PARAM_1 *= 0.95);
           JButton up1 = new JButton("Up 1");
@@ -784,8 +784,8 @@ public class ChargeSimulator extends JPanel {
 
         if (e.getKeyCode() == KeyEvent.VK_0) {
           enqueueUpdate(() -> {
-            int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-            int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+            int viewportCenterX = (int) ((getWidth() / 2 - centerPos.width) / scaleFactor);
+            int viewportCenterY = (int) ((getHeight() / 2 - centerPos.height) / scaleFactor);
 
             double radius = 100 / scaleFactor;
             int nCharges = radialCount;
@@ -1427,8 +1427,8 @@ public class ChargeSimulator extends JPanel {
       posCharges.clear();
       for (int i = 0; i < 100; i++) {
         posCharges.add(new Charge(
-            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2,
+            r.nextInt(getWidth()) - getWidth() / 2,
+            r.nextInt(getHeight()) - getHeight() / 2,
             50 + r.nextInt(100)));
       }
     }
@@ -1437,8 +1437,8 @@ public class ChargeSimulator extends JPanel {
       negCharges.clear();
       for (int i = 0; i < 100; i++) {
         negCharges.add(new Charge(
-            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2,
+            r.nextInt(getWidth()) - getWidth() / 2,
+            r.nextInt(getHeight()) - getHeight() / 2,
             -200 + r.nextInt(100)));
       }
     }
@@ -1447,8 +1447,8 @@ public class ChargeSimulator extends JPanel {
       testCharges.clear();
       for (int i = 0; i < 50; i++) {
         testCharges.add(new TestCharge(
-            r.nextInt(FRAME_WIDTH) - FRAME_WIDTH / 2,
-            r.nextInt(FRAME_HEIGHT) - FRAME_HEIGHT / 2));
+            r.nextInt(getWidth()) - getWidth() / 2,
+            r.nextInt(getHeight()) - getHeight() / 2));
       }
     }
 
@@ -1521,8 +1521,8 @@ public class ChargeSimulator extends JPanel {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   private void verb_tc_circle(int radialCount) {
-    int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-    int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+    int viewportCenterX = (int) ((getWidth() / 2 - centerPos.width) / scaleFactor);
+    int viewportCenterY = (int) ((getHeight() / 2 - centerPos.height) / scaleFactor);
 
     double radius = 100 / scaleFactor;
     int nCharges = radialCount;
@@ -1539,11 +1539,11 @@ public class ChargeSimulator extends JPanel {
   }
 
   private void verb_tc_grid(int dx, int dy) {
-    int viewportCenterX = (int) ((FRAME_WIDTH / 2 - centerPos.width) / scaleFactor);
-    int viewportCenterY = (int) ((FRAME_HEIGHT / 2 - centerPos.height) / scaleFactor);
+    int viewportCenterX = (int) ((getWidth() / 2 - centerPos.width) / scaleFactor);
+    int viewportCenterY = (int) ((getHeight() / 2 - centerPos.height) / scaleFactor);
 
-    for (int i = -FRAME_WIDTH / 2; i < FRAME_WIDTH / 2; i += dx) {
-      for (int j = -FRAME_HEIGHT / 2; j < FRAME_HEIGHT / 2; j += dy) {
+    for (int i = -getWidth() / 2; i < getWidth() / 2; i += dx) {
+      for (int j = -getHeight() / 2; j < getHeight() / 2; j += dy) {
         testCharges.add(new TestCharge(
             viewportCenterX + i / scaleFactor,
             viewportCenterY + j / scaleFactor));
