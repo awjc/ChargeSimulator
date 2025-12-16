@@ -1333,6 +1333,7 @@ public class ChargeSimulator extends JPanel {
       out.println(String.format("PSF %f", physicsSpeedFactor));
       out.println(String.format("CP %d %d", centerPos.width, centerPos.height));
       out.println(String.format("SF %f", scaleFactor));
+      out.println(String.format("WB %d %d %d %d", frame.getX(), frame.getY(), frame.getWidth(), frame.getHeight()));
       for (TestCharge testCharge : testCharges) {
         out.println(testCharge.toSerializedString());
       }
@@ -1359,6 +1360,8 @@ public class ChargeSimulator extends JPanel {
     try {
       Scanner scanner = new Scanner(new FileInputStream(filename));
       clearParticles(ALL, ALL, ALL);
+      boolean hasWindowBounds = false;
+      int windowX = 0, windowY = 0, windowWidth = 0, windowHeight = 0;
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
         if (line.startsWith("TestChargeColorParams ")) {
@@ -1391,9 +1394,20 @@ public class ChargeSimulator extends JPanel {
               Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
         } else if (line.startsWith("SF ")) {
           scaleFactor = pullDoubleParam(line);
+        } else if (line.startsWith("WB ")) {
+          String[] parts = line.split(" ");
+          assert parts.length == 5;
+          windowX = Integer.parseInt(parts[1]);
+          windowY = Integer.parseInt(parts[2]);
+          windowWidth = Integer.parseInt(parts[3]);
+          windowHeight = Integer.parseInt(parts[4]);
+          hasWindowBounds = true;
         }
       }
       scanner.close();
+      if (hasWindowBounds) {
+        frame.setBounds(windowX, windowY, windowWidth, windowHeight);
+      }
       System.out.println(String.format("Succesfully loaded save state from file \"%s\"", filename));
     } catch (FileNotFoundException e) {
       e.printStackTrace();
