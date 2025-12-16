@@ -376,16 +376,16 @@ public class ChargeSimulator extends JPanel {
           if (oldScaleFactor > scaleFactor) {
             double change = scaleFactor / oldScaleFactor - 1;
             // double change = 1 - scaleFactor / oldScaleFactor;
-            int xx = (FRAME_WIDTH / 2 - centerPos.width);
-            int yy = (FRAME_HEIGHT / 2 - centerPos.height);
+            int xx = (getWidth() / 2 - centerPos.width);
+            int yy = (getHeight() / 2 - centerPos.height);
             // centerPos = new Dimension((int)(centerPos.width * change), (int)(centerPos.height * change));
             centerPos = new Dimension((int) (centerPos.width - xx * change),
                 (int) (centerPos.height - yy * change));
           } else {
             double change = scaleFactor / oldScaleFactor - 1;
             // double change = 1 - scaleFactor / oldScaleFactor;
-            int xx = (FRAME_WIDTH / 2 - centerPos.width);
-            int yy = (FRAME_HEIGHT / 2 - centerPos.height);
+            int xx = (getWidth() / 2 - centerPos.width);
+            int yy = (getHeight() / 2 - centerPos.height);
             // centerPos = new Dimension((int)(centerPos.width * change), (int)(centerPos.height * change));
             centerPos = new Dimension((int) (centerPos.width - xx * change),
                 (int) (centerPos.height - yy * change));
