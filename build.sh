@@ -29,4 +29,6 @@ jar cfm ChargeSimulator.jar META-INF/MANIFEST.MF -C "$BUILD_DIR" .
 # Clean up build directory
 rm -rf "$BUILD_DIR"
 
-echo "Build complete! ChargeSimulator.jar created successfully."
+echo "Build complete! ChargeSimulator.jar created successfully. Running..."
+
+./run.sh
