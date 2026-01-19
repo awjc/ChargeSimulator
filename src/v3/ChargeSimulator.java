@@ -1278,10 +1278,12 @@ public class ChargeSimulator extends JPanel {
         synchronized (negCharges) {
           negCharges.clear();
         }
+        break;
       case HALF:
         synchronized (negCharges) {
           clearHalf(negCharges);
         }
+        break;
       case NONE:
         break;
     }
@@ -1291,10 +1293,12 @@ public class ChargeSimulator extends JPanel {
         synchronized (posCharges) {
           posCharges.clear();
         }
+        break;
       case HALF:
         synchronized (posCharges) {
           clearHalf(posCharges);
         }
+        break;
       case NONE:
         break;
     }
@@ -1304,10 +1308,12 @@ public class ChargeSimulator extends JPanel {
         synchronized (testCharges) {
           testCharges.clear();
         }
+        break;
       case HALF:
         synchronized (testCharges) {
           clearHalf(testCharges);
         }
+        break;
       case NONE:
         break;
     }
